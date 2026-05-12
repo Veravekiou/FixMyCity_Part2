@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
 public class LocationHelper {
 
@@ -46,7 +47,7 @@ public class LocationHelper {
             return;
         }
 
-        fusedLocationClient.getLastLocation()
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(location -> {
                     if (location != null) {
                         callback.onLocationReceived(location.getLatitude(), location.getLongitude());

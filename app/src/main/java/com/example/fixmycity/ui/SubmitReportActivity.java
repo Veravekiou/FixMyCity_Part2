@@ -19,8 +19,14 @@ import com.example.fixmycity.R;
 import com.example.fixmycity.data.ReportRepository;
 import com.example.fixmycity.model.Report;
 import com.example.fixmycity.utils.LocationHelper;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class SubmitReportActivity extends AppCompatActivity {
+public class SubmitReportActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private EditText etTitle, etDescription;
     private Spinner spCategory;
@@ -36,6 +42,7 @@ public class SubmitReportActivity extends AppCompatActivity {
     private LocationHelper locationHelper;
     private ActivityResultLauncher<String> imagePickerLauncher;
     private ReportRepository reportRepository;
+    private GoogleMap googleMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +60,12 @@ public class SubmitReportActivity extends AppCompatActivity {
 
         locationHelper = new LocationHelper(this);
         reportRepository = new ReportRepository();
+
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapPreview);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
         String[] categories = {"Pothole", "Broken Streetlight", "Garbage", "Sidewalk Damage", "Vandalism"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -94,6 +107,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 longitude = lng;
                 locationSelected = true;
                 tvLocation.setText("Lat: " + lat + ", Lng: " + lng);
+                updateMapMarker(lat, lng);
             }
 
             @Override
@@ -173,6 +187,29 @@ public class SubmitReportActivity extends AppCompatActivity {
         longitude = 0.0;
         locationSelected = false;
         selectedImageUri = null;
+        if (googleMap != null) {
+            googleMap.clear();
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        googleMap = map;
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.getUiSettings().setMapToolbarEnabled(true);
+    }
+
+    private void updateMapMarker(double lat, double lng) {
+        if (googleMap == null) {
+            return;
+        }
+
+        LatLng selectedLocation = new LatLng(lat, lng);
+        googleMap.clear();
+        googleMap.addMarker(new MarkerOptions()
+                .position(selectedLocation)
+                .title("Report location"));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(selectedLocation, 16f));
     }
 
     @Override

@@ -10,7 +10,7 @@ import com.example.fixmycity.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnCreateReport, btnViewReports;
+    private Button btnCreateReport, btnViewReports, btnReportsMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,11 +19,15 @@ public class MainActivity extends AppCompatActivity {
 
         btnCreateReport = findViewById(R.id.btnCreateReport);
         btnViewReports = findViewById(R.id.btnViewReports);
+        btnReportsMap = findViewById(R.id.btnReportsMap);
 
         btnCreateReport.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, SubmitReportActivity.class)));
 
         btnViewReports.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, MyReportsActivity.class)));
+
+        btnReportsMap.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, ReportsMapActivity.class)));
     }
 }

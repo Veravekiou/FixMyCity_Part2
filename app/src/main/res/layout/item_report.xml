@@ -31,4 +31,19 @@
         android:text="Status"
         android:layout_marginTop="6dp"
         android:textColor="#333333" />
+
+    <TextView
+        android:id="@+id/tvReportLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location"
+        android:layout_marginTop="6dp"
+        android:textColor="#333333" />
+
+    <Button
+        android:id="@+id/btnOpenInMaps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open in Maps"
+        android:layout_marginTop="10dp" />
 </LinearLayout>

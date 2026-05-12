@@ -60,6 +60,13 @@
             android:textColor="#444444"
             android:layout_marginBottom="12dp" />
 
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/mapPreview"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginBottom="12dp" />
+
         <Button
             android:id="@+id/btnPickImage"
             android:layout_width="match_parent"
