@@ -3,10 +3,12 @@ package com.example.fixmycity.ui;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,14 +27,16 @@ import com.example.fixmycity.model.Report;
 import com.example.fixmycity.utils.Constants;
 import com.example.fixmycity.utils.LocationHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class SubmitReportActivity extends AppCompatActivity {
 
     private EditText etTitle, etDescription;
     private Spinner spCategory;
     private Button btnGetLocation, btnPickImage, btnSubmit;
-    private TextView tvLocation;
+    private TextView tvLocation, tvLocationStatus, tvLocationStep, tvPhotoStep, tvSubmitStep;
     private ImageView ivPreview;
+    private LinearLayout layoutImagePlaceholder;
 
     private double latitude = 0.0;
     private double longitude = 0.0;
@@ -57,7 +61,12 @@ public class SubmitReportActivity extends AppCompatActivity {
         btnPickImage = findViewById(R.id.btnPickImage);
         btnSubmit = findViewById(R.id.btnSubmit);
         tvLocation = findViewById(R.id.tvLocation);
+        tvLocationStatus = findViewById(R.id.tvLocationStatus);
+        tvLocationStep = findViewById(R.id.tvLocationStep);
+        tvPhotoStep = findViewById(R.id.tvPhotoStep);
+        tvSubmitStep = findViewById(R.id.tvSubmitStep);
         ivPreview = findViewById(R.id.ivPreview);
+        layoutImagePlaceholder = findViewById(R.id.layoutImagePlaceholder);
         BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
 
         locationHelper = new LocationHelper(this);
@@ -79,6 +88,8 @@ public class SubmitReportActivity extends AppCompatActivity {
                     if (uri != null) {
                         selectedImageUri = uri;
                         ivPreview.setImageURI(uri);
+                        layoutImagePlaceholder.setVisibility(View.GONE);
+                        markStepCompleted(tvPhotoStep);
                     }
                 }
         );
@@ -105,7 +116,11 @@ public class SubmitReportActivity extends AppCompatActivity {
                 latitude = lat;
                 longitude = lng;
                 locationSelected = true;
+                tvLocationStatus.setText(getString(R.string.submit_location_ready));
+                tvLocationStatus.setBackgroundResource(R.drawable.bg_location_selected);
+                tvLocationStatus.setTextColor(getColor(R.color.primary_dark));
                 tvLocation.setText(getString(R.string.submit_location_format, lat, lng));
+                markStepCompleted(tvLocationStep);
             }
 
             @Override
@@ -132,9 +147,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 report,
                 unused -> {
                     setSubmittingState(false);
-                    Toast.makeText(SubmitReportActivity.this,
-                            getString(R.string.submit_success),
-                            Toast.LENGTH_LONG).show();
+                    showSuccessDialog();
                     clearForm();
                 },
                 e -> {
@@ -146,11 +159,35 @@ public class SubmitReportActivity extends AppCompatActivity {
         );
     }
 
+    private void showSuccessDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.submit_success)
+                .setMessage(R.string.submit_success_message)
+                .setPositiveButton(R.string.dialog_ok, null)
+                .show();
+    }
+
+    private void markStepCompleted(TextView stepView) {
+        stepView.setBackgroundResource(R.drawable.bg_step_active);
+        stepView.setTextColor(getColor(R.color.white));
+    }
+
+    private void markStepPending(TextView stepView) {
+        stepView.setBackgroundResource(R.drawable.bg_step_inactive);
+        stepView.setTextColor(getColor(R.color.text_secondary));
+    }
+
     private void setSubmittingState(boolean isSubmitting) {
         btnSubmit.setEnabled(!isSubmitting);
         btnSubmit.setText(isSubmitting
                 ? getString(R.string.submit_report_loading)
                 : getString(R.string.submit_report));
+
+        if (isSubmitting) {
+            markStepCompleted(tvSubmitStep);
+        } else {
+            markStepPending(tvSubmitStep);
+        }
     }
 
     private ReportFormData getFormData() {
@@ -195,8 +232,15 @@ public class SubmitReportActivity extends AppCompatActivity {
         etTitle.setText("");
         etDescription.setText("");
         spCategory.setSelection(0);
-        tvLocation.setText(getString(R.string.submit_location_missing));
+        tvLocationStatus.setText(getString(R.string.submit_location_missing));
+        tvLocationStatus.setBackgroundResource(R.drawable.bg_preview);
+        tvLocationStatus.setTextColor(getColor(R.color.text_secondary));
+        tvLocation.setText(getString(R.string.submit_location_missing_note));
         ivPreview.setImageDrawable(null);
+        layoutImagePlaceholder.setVisibility(View.VISIBLE);
+        markStepPending(tvLocationStep);
+        markStepPending(tvPhotoStep);
+        markStepPending(tvSubmitStep);
 
         latitude = 0.0;
         longitude = 0.0;
