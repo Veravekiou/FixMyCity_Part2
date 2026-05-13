@@ -29,6 +29,16 @@ public class ReportRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    public void cancelReport(String reportId,
+                             OnSuccessListener<Void> onSuccess,
+                             OnFailureListener onFailure) {
+        db.collection(Constants.REPORTS_COLLECTION)
+                .document(reportId)
+                .update("status", Constants.CANCELLED_REPORT_STATUS)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
     public interface ReportsCallback {
         void onSuccess(List<Report> reports);
         void onFailure(Exception e);
@@ -53,9 +63,30 @@ public class ReportRepository {
         List<Report> reports = new ArrayList<>();
 
         for (QueryDocumentSnapshot document : querySnapshot) {
-            reports.add(document.toObject(Report.class));
+            Report report = document.toObject(Report.class);
+            report.setId(document.getId());
+            reports.add(report);
         }
 
+        reports.add(createDemoResolvedReport());
+
         return reports;
+    }
+
+    private Report createDemoResolvedReport() {
+        Report report = new Report(
+                "Repaired streetlight outside the library",
+                "The streetlight was reported as broken and has now been repaired by the city maintenance team.",
+                "Broken Streetlight",
+                35.3387,
+                25.1442,
+                false,
+                null,
+                "Resolved",
+                System.currentTimeMillis() - 86400000L,
+                Constants.CURRENT_USER_EMAIL
+        );
+        report.setId("demo-resolved-report");
+        return report;
     }
 }

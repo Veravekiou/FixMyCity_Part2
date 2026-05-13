@@ -18,7 +18,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private Button btnCreateReport, btnViewReports;
-    private TextView tvPendingReportsCount, tvSubmittedReportsCount;
+    private TextView tvPendingReportsCount, tvSubmittedReportsCount, tvResolvedReportsCount,
+            tvDashboardStatus;
+    private BottomNavigationView bottomNavigation;
     private ReportRepository reportRepository;
 
     @Override
@@ -30,7 +32,9 @@ public class MainActivity extends AppCompatActivity {
         btnViewReports = findViewById(R.id.btnViewReports);
         tvPendingReportsCount = findViewById(R.id.tvPendingReportsCount);
         tvSubmittedReportsCount = findViewById(R.id.tvSubmittedReportsCount);
-        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        tvResolvedReportsCount = findViewById(R.id.tvResolvedReportsCount);
+        tvDashboardStatus = findViewById(R.id.tvDashboardStatus);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
         reportRepository = new ReportRepository();
 
         btnCreateReport.setOnClickListener(v ->
@@ -43,19 +47,30 @@ public class MainActivity extends AppCompatActivity {
         loadDashboardSummary();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavigationHelper.syncSelectedItem(bottomNavigation, R.id.navHome);
+    }
+
     private void loadDashboardSummary() {
         reportRepository.getAllReports(new ReportRepository.ReportsCallback() {
             @Override
             public void onSuccess(List<Report> reports) {
                 int pendingReports = countPendingReports(reports);
+                int resolvedReports = countResolvedReports(reports);
                 tvPendingReportsCount.setText(String.valueOf(pendingReports));
                 tvSubmittedReportsCount.setText(String.valueOf(reports.size()));
+                tvResolvedReportsCount.setText(String.valueOf(resolvedReports));
+                tvDashboardStatus.setText(R.string.home_summary_ready);
             }
 
             @Override
             public void onFailure(Exception e) {
                 tvPendingReportsCount.setText("0");
                 tvSubmittedReportsCount.setText("0");
+                tvResolvedReportsCount.setText("0");
+                tvDashboardStatus.setText(R.string.home_summary_error);
             }
         });
     }
@@ -70,5 +85,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return pendingReports;
+    }
+
+    private int countResolvedReports(List<Report> reports) {
+        int resolvedReports = 0;
+
+        for (Report report : reports) {
+            if ("Resolved".equalsIgnoreCase(report.getStatus())) {
+                resolvedReports++;
+            }
+        }
+
+        return resolvedReports;
     }
 }

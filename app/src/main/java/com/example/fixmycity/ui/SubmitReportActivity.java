@@ -4,6 +4,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,9 +35,11 @@ public class SubmitReportActivity extends AppCompatActivity {
     private EditText etTitle, etDescription;
     private Spinner spCategory;
     private Button btnGetLocation, btnPickImage, btnSubmit;
-    private TextView tvLocation, tvLocationStatus, tvLocationStep, tvPhotoStep, tvSubmitStep;
+    private TextView tvLocation, tvLocationStatus, tvCategoryStep, tvLocationStep, tvPhotoStep,
+            tvDetailsStep, tvSubmitStep;
     private ImageView ivPreview;
     private LinearLayout layoutImagePlaceholder;
+    private BottomNavigationView bottomNavigation;
 
     private double latitude = 0.0;
     private double longitude = 0.0;
@@ -62,12 +65,14 @@ public class SubmitReportActivity extends AppCompatActivity {
         btnSubmit = findViewById(R.id.btnSubmit);
         tvLocation = findViewById(R.id.tvLocation);
         tvLocationStatus = findViewById(R.id.tvLocationStatus);
+        tvCategoryStep = findViewById(R.id.tvCategoryStep);
         tvLocationStep = findViewById(R.id.tvLocationStep);
         tvPhotoStep = findViewById(R.id.tvPhotoStep);
+        tvDetailsStep = findViewById(R.id.tvDetailsStep);
         tvSubmitStep = findViewById(R.id.tvSubmitStep);
         ivPreview = findViewById(R.id.ivPreview);
         layoutImagePlaceholder = findViewById(R.id.layoutImagePlaceholder);
-        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
 
         locationHelper = new LocationHelper(this);
         reportRepository = new ReportRepository();
@@ -76,10 +81,24 @@ public class SubmitReportActivity extends AppCompatActivity {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_spinner_item,
+                R.layout.item_spinner_category,
                 Constants.REPORT_CATEGORIES
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView view = (TextView) super.getView(position, convertView, parent);
+                styleCategoryOption(view, position == 0);
+                return view;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                TextView view = (TextView) super.getDropDownView(position, convertView, parent);
+                styleCategoryOption(view, position == 0);
+                return view;
+            }
+        };
+        adapter.setDropDownViewResource(R.layout.item_spinner_category_dropdown);
         spCategory.setAdapter(adapter);
 
         imagePickerLauncher = registerForActivityResult(
@@ -103,10 +122,17 @@ public class SubmitReportActivity extends AppCompatActivity {
         });
 
         btnPickImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
-
         btnSubmit.setOnClickListener(v -> submitReport());
 
+        markStepCompleted(tvCategoryStep);
+        markStepCompleted(tvDetailsStep);
         BottomNavigationHelper.setup(this, bottomNavigation, R.id.navNewReport);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavigationHelper.syncSelectedItem(bottomNavigation, R.id.navNewReport);
     }
 
     private void fetchLocation() {
@@ -128,6 +154,12 @@ public class SubmitReportActivity extends AppCompatActivity {
                 Toast.makeText(SubmitReportActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void styleCategoryOption(TextView view, boolean isPlaceholder) {
+        view.setTextColor(getColor(isPlaceholder ? R.color.text_secondary : R.color.text_primary));
+        view.setTextSize(isPlaceholder ? 14 : 15);
+        view.setTypeface(null, isPlaceholder ? android.graphics.Typeface.NORMAL : android.graphics.Typeface.BOLD);
     }
 
     private void submitReport() {
@@ -204,6 +236,9 @@ public class SubmitReportActivity extends AppCompatActivity {
 
     private void showValidationError(ValidationResult validationResult) {
         switch (validationResult.getField()) {
+            case CATEGORY:
+                Toast.makeText(this, validationResult.getMessage(), Toast.LENGTH_SHORT).show();
+                break;
             case TITLE:
                 etTitle.setError(validationResult.getMessage());
                 break;
@@ -238,6 +273,8 @@ public class SubmitReportActivity extends AppCompatActivity {
         tvLocation.setText(getString(R.string.submit_location_missing_note));
         ivPreview.setImageDrawable(null);
         layoutImagePlaceholder.setVisibility(View.VISIBLE);
+        markStepCompleted(tvCategoryStep);
+        markStepCompleted(tvDetailsStep);
         markStepPending(tvLocationStep);
         markStepPending(tvPhotoStep);
         markStepPending(tvSubmitStep);

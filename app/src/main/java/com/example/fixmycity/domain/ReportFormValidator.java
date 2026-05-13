@@ -1,8 +1,15 @@
 package com.example.fixmycity.domain;
 
+import com.example.fixmycity.utils.Constants;
+
 public class ReportFormValidator {
 
     public ValidationResult validate(ReportFormData formData) {
+        if (isBlank(formData.getCategory())
+                || Constants.CATEGORY_PLACEHOLDER.equals(formData.getCategory())) {
+            return ValidationResult.error(Field.CATEGORY, "Please select an issue type");
+        }
+
         if (isBlank(formData.getTitle())) {
             return ValidationResult.error(Field.TITLE, "Title is required");
         }
@@ -24,6 +31,7 @@ public class ReportFormValidator {
 
     public enum Field {
         NONE,
+        CATEGORY,
         TITLE,
         DESCRIPTION,
         LOCATION

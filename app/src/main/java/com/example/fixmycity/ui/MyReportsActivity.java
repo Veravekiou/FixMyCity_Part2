@@ -1,5 +1,6 @@
 package com.example.fixmycity.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -32,12 +33,15 @@ public class MyReportsActivity extends AppCompatActivity {
     private TextView tvEmptyReports;
     private TextView tvReportsError;
     private Button btnRetryReports;
+    private Button btnCreateReportFromEmpty;
     private SwipeRefreshLayout swipeRefreshReports;
     private ChipGroup chipGroupReportFilters;
+    private BottomNavigationView bottomNavigation;
     private ReportAdapter reportAdapter;
     private ReportRepository reportRepository;
     private final List<Report> allReports = new ArrayList<>();
     private ReportFilter selectedFilter = ReportFilter.ALL;
+    private boolean hasResumedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +56,10 @@ public class MyReportsActivity extends AppCompatActivity {
         tvEmptyReports = findViewById(R.id.tvEmptyReports);
         tvReportsError = findViewById(R.id.tvReportsError);
         btnRetryReports = findViewById(R.id.btnRetryReports);
+        btnCreateReportFromEmpty = findViewById(R.id.btnCreateReportFromEmpty);
         swipeRefreshReports = findViewById(R.id.swipeRefreshReports);
         chipGroupReportFilters = findViewById(R.id.chipGroupReportFilters);
-        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
         recyclerReports.setLayoutManager(new LinearLayoutManager(this));
 
         reportAdapter = new ReportAdapter(new ArrayList<>());
@@ -74,7 +79,21 @@ public class MyReportsActivity extends AppCompatActivity {
             applySelectedFilter();
         });
         btnRetryReports.setOnClickListener(v -> loadReports(true));
+        btnCreateReportFromEmpty.setOnClickListener(v ->
+                startActivity(new Intent(this, SubmitReportActivity.class)));
         loadReports(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavigationHelper.syncSelectedItem(bottomNavigation, R.id.navMyReports);
+
+        if (hasResumedOnce) {
+            loadReports(false);
+        } else {
+            hasResumedOnce = true;
+        }
     }
 
     private void loadReports(boolean showLoadingState) {
@@ -118,6 +137,7 @@ public class MyReportsActivity extends AppCompatActivity {
         tvEmptyReports.setText(filtered
                 ? getString(R.string.reports_empty_filtered)
                 : getString(R.string.reports_empty));
+        btnCreateReportFromEmpty.setVisibility(filtered ? View.GONE : View.VISIBLE);
         layoutLoadingReports.setVisibility(View.GONE);
         layoutEmptyReports.setVisibility(View.VISIBLE);
         layoutErrorReports.setVisibility(View.GONE);
@@ -187,7 +207,11 @@ public class MyReportsActivity extends AppCompatActivity {
             return Constants.DEFAULT_REPORT_STATUS.equalsIgnoreCase(status);
         }
 
-        return "Resolved".equalsIgnoreCase(status);
+        if (filter == ReportFilter.RESOLVED) {
+            return "Resolved".equalsIgnoreCase(status);
+        }
+
+        return Constants.CANCELLED_REPORT_STATUS.equalsIgnoreCase(status);
     }
 
     private ReportFilter getFilterForChip(int checkedChipId) {
@@ -199,12 +223,17 @@ public class MyReportsActivity extends AppCompatActivity {
             return ReportFilter.RESOLVED;
         }
 
+        if (checkedChipId == R.id.chipFilterCancelled) {
+            return ReportFilter.CANCELLED;
+        }
+
         return ReportFilter.ALL;
     }
 
     private enum ReportFilter {
         ALL,
         PENDING,
-        RESOLVED
+        RESOLVED,
+        CANCELLED
     }
 }

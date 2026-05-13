@@ -81,6 +81,14 @@
                     android:text="@string/reports_empty"
                     android:textColor="@color/text_secondary"
                     android:textSize="15sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCreateReportFromEmpty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:minHeight="48dp"
+                    android:text="@string/home_create_report" />
             </LinearLayout>
 
             <com.google.android.material.chip.ChipGroup
@@ -112,6 +120,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/reports_filter_resolved" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipFilterCancelled"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reports_filter_cancelled" />
             </com.google.android.material.chip.ChipGroup>
 
             <LinearLayout
@@ -161,8 +176,17 @@
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/surface"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/primary"
+        android:background="@drawable/bg_bottom_nav"
+        android:elevation="6dp"
+        android:minHeight="78dp"
+        app:itemActiveIndicatorStyle="@null"
+        app:itemBackground="@drawable/bottom_nav_item_background"
+        app:itemIconSize="28dp"
+        app:itemIconTint="@color/bottom_nav_item_color"
+        app:itemRippleColor="@color/bottom_nav_ripple_color"
+        app:itemTextAppearanceActive="@style/TextAppearance.FixMyCity.BottomNavigation.Active"
+        app:itemTextAppearanceInactive="@style/TextAppearance.FixMyCity.BottomNavigation.Inactive"
+        app:itemTextColor="@color/bottom_nav_item_color"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_navigation_menu" />
 </LinearLayout>

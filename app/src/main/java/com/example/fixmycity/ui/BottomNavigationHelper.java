@@ -15,7 +15,7 @@ public final class BottomNavigationHelper {
     public static void setup(Activity activity,
                              BottomNavigationView bottomNavigationView,
                              int selectedItemId) {
-        bottomNavigationView.setSelectedItemId(selectedItemId);
+        syncSelectedItem(bottomNavigationView, selectedItemId);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
@@ -40,6 +40,12 @@ public final class BottomNavigationHelper {
 
             return false;
         });
+    }
+
+    public static void syncSelectedItem(BottomNavigationView bottomNavigationView, int selectedItemId) {
+        if (bottomNavigationView.getSelectedItemId() != selectedItemId) {
+            bottomNavigationView.setSelectedItemId(selectedItemId);
+        }
     }
 
     private static void open(Activity activity, Class<?> destination) {

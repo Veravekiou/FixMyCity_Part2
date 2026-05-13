@@ -49,6 +49,7 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
         holder.tvTitle.setText(report.getTitle());
         holder.tvCategory.setText(context.getString(R.string.report_category_format, report.getCategory()));
         holder.tvStatus.setText(context.getString(R.string.report_status_format, report.getStatus()));
+        styleStatus(context, holder.tvStatus, report.getStatus());
         holder.tvDescription.setText(report.getDescription());
         holder.tvDate.setText(context.getString(R.string.report_date_format, formatDate(report.getCreatedAt())));
         holder.tvLocation.setText(context.getString(
@@ -90,6 +91,7 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
 
     private void openReportDetails(Context context, Report report) {
         Intent intent = new Intent(context, ReportDetailsActivity.class);
+        intent.putExtra(ReportDetailsActivity.EXTRA_REPORT_ID, report.getId());
         intent.putExtra(ReportDetailsActivity.EXTRA_TITLE, report.getTitle());
         intent.putExtra(ReportDetailsActivity.EXTRA_DESCRIPTION, report.getDescription());
         intent.putExtra(ReportDetailsActivity.EXTRA_CATEGORY, report.getCategory());
@@ -100,5 +102,22 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
         intent.putExtra(ReportDetailsActivity.EXTRA_HAS_IMAGE, report.isHasImage());
         intent.putExtra(ReportDetailsActivity.EXTRA_IMAGE_URI, report.getLocalImageUri());
         context.startActivity(intent);
+    }
+
+    private void styleStatus(Context context, TextView statusView, String status) {
+        if ("Resolved".equalsIgnoreCase(status)) {
+            statusView.setBackgroundResource(R.drawable.bg_status_resolved);
+            statusView.setTextColor(context.getColor(R.color.primary_dark));
+            return;
+        }
+
+        if ("Cancelled".equalsIgnoreCase(status)) {
+            statusView.setBackgroundResource(R.drawable.bg_status_cancelled);
+            statusView.setTextColor(context.getColor(R.color.error));
+            return;
+        }
+
+        statusView.setBackgroundResource(R.drawable.bg_status_pending);
+        statusView.setTextColor(context.getColor(R.color.primary_dark));
     }
 }
