@@ -105,7 +105,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 latitude = lat;
                 longitude = lng;
                 locationSelected = true;
-                tvLocation.setText("Lat: " + lat + ", Lng: " + lng);
+                tvLocation.setText(getString(R.string.submit_location_format, lat, lng));
             }
 
             @Override
@@ -124,26 +124,33 @@ public class SubmitReportActivity extends AppCompatActivity {
             return;
         }
 
-        btnSubmit.setEnabled(false);
+        setSubmittingState(true);
 
         Report report = reportFactory.createFromForm(formData);
 
         reportRepository.saveReport(
                 report,
                 unused -> {
-                    btnSubmit.setEnabled(true);
+                    setSubmittingState(false);
                     Toast.makeText(SubmitReportActivity.this,
-                            "Report submitted successfully",
+                            getString(R.string.submit_success),
                             Toast.LENGTH_LONG).show();
                     clearForm();
                 },
                 e -> {
-                    btnSubmit.setEnabled(true);
+                    setSubmittingState(false);
                     Toast.makeText(SubmitReportActivity.this,
                             getRepositoryErrorMessage(e),
                             Toast.LENGTH_LONG).show();
                 }
         );
+    }
+
+    private void setSubmittingState(boolean isSubmitting) {
+        btnSubmit.setEnabled(!isSubmitting);
+        btnSubmit.setText(isSubmitting
+                ? getString(R.string.submit_report_loading)
+                : getString(R.string.submit_report));
     }
 
     private ReportFormData getFormData() {
@@ -170,7 +177,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 Toast.makeText(this, validationResult.getMessage(), Toast.LENGTH_SHORT).show();
                 break;
             default:
-                Toast.makeText(this, "Please check the form", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.submit_check_form), Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -178,17 +185,17 @@ public class SubmitReportActivity extends AppCompatActivity {
     private String getRepositoryErrorMessage(Exception exception) {
         String detail = exception.getMessage();
         if (detail == null || detail.trim().isEmpty()) {
-            return "Save failed. Please try again.";
+            return getString(R.string.submit_save_failed);
         }
 
-        return "Save failed: " + detail;
+        return getString(R.string.submit_save_failed_detail, detail);
     }
 
     private void clearForm() {
         etTitle.setText("");
         etDescription.setText("");
         spCategory.setSelection(0);
-        tvLocation.setText("Location not selected");
+        tvLocation.setText(getString(R.string.submit_location_missing));
         ivPreview.setImageDrawable(null);
 
         latitude = 0.0;
@@ -205,7 +212,7 @@ public class SubmitReportActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 fetchLocation();
             } else {
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.location_permission_denied), Toast.LENGTH_SHORT).show();
             }
         }
     }

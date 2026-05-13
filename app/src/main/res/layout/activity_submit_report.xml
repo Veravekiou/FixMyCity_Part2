@@ -55,15 +55,24 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <EditText
-                        android:id="@+id/etTitle"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:minHeight="52dp"
                         android:hint="@string/submit_title_hint"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_secondary"
-                        android:layout_marginBottom="12dp" />
+                        android:layout_marginBottom="12dp"
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="52dp"
+                            android:inputType="textCapSentences"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_secondary" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <Spinner
                         android:id="@+id/spCategory"
@@ -72,15 +81,23 @@
                         android:minHeight="52dp"
                         android:layout_marginBottom="12dp" />
 
-                    <EditText
-                        android:id="@+id/etDescription"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
-                        android:layout_height="120dp"
-                        android:gravity="top"
+                        android:layout_height="wrap_content"
                         android:hint="@string/submit_description_hint"
-                        android:inputType="textMultiLine"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_secondary" />
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:gravity="top"
+                            android:inputType="textCapSentences|textMultiLine"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_secondary" />
+                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -109,7 +126,7 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnGetLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -151,7 +168,7 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPickImage"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -201,7 +218,7 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSubmit"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
