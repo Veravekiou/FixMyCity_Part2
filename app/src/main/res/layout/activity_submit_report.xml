@@ -76,6 +76,14 @@
             android:contentDescription="Selected image preview"
             android:layout_marginBottom="16dp" />
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp" />
+
         <Button
             android:id="@+id/btnSubmit"
             android:layout_width="match_parent"

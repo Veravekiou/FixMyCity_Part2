@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +20,7 @@ import com.example.fixmycity.R;
 import com.example.fixmycity.data.ReportRepository;
 import com.example.fixmycity.model.Report;
 import com.example.fixmycity.utils.CameraHelper;
+import com.example.fixmycity.utils.ImageUploadHelper;
 import com.example.fixmycity.utils.LocationHelper;
 
 public class SubmitReportActivity extends AppCompatActivity {
@@ -27,6 +30,7 @@ public class SubmitReportActivity extends AppCompatActivity {
     private Button btnGetLocation, btnTakePhoto, btnSubmit;
     private TextView tvLocation;
     private ImageView ivPreview;
+    private ProgressBar progressBar;
 
     private double latitude = 0.0;
     private double longitude = 0.0;
@@ -35,6 +39,7 @@ public class SubmitReportActivity extends AppCompatActivity {
 
     private LocationHelper locationHelper;
     private CameraHelper cameraHelper;
+    private ImageUploadHelper imageUploadHelper;
     private ReportRepository reportRepository;
 
     @Override
@@ -50,9 +55,11 @@ public class SubmitReportActivity extends AppCompatActivity {
         btnSubmit = findViewById(R.id.btnSubmit);
         tvLocation = findViewById(R.id.tvLocation);
         ivPreview = findViewById(R.id.ivPreview);
+        progressBar = findViewById(R.id.progressBar);
 
         locationHelper = new LocationHelper(this);
         cameraHelper = new CameraHelper(this);
+        imageUploadHelper = new ImageUploadHelper();
         reportRepository = new ReportRepository();
 
         String[] categories = {"Pothole", "Broken Streetlight", "Garbage", "Sidewalk Damage", "Vandalism"};
@@ -74,7 +81,7 @@ public class SubmitReportActivity extends AppCompatActivity {
 
         btnTakePhoto.setOnClickListener(v -> {
             if (checkSelfPermission(android.Manifest.permission.CAMERA)
-                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(
                         new String[]{android.Manifest.permission.CAMERA},
                         CameraHelper.CAMERA_PERMISSION_REQUEST_CODE
@@ -142,19 +149,39 @@ public class SubmitReportActivity extends AppCompatActivity {
             return;
         }
 
-        boolean hasImage = selectedImageUri != null;
-        String localImageUri = selectedImageUri != null ? selectedImageUri.toString() : "";
-
         btnSubmit.setEnabled(false);
+        progressBar.setVisibility(View.VISIBLE);
 
+        if (selectedImageUri != null) {
+            imageUploadHelper.uploadImage(selectedImageUri, new ImageUploadHelper.UploadCallback() {
+                @Override
+                public void onSuccess(String downloadUrl) {
+                    saveReport(title, description, category, downloadUrl);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    btnSubmit.setEnabled(true);
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(SubmitReportActivity.this,
+                            "Image upload failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        } else {
+            saveReport(title, description, category, "");
+        }
+    }
+
+    private void saveReport(String title, String description, String category, String imageUrl) {
         Report report = new Report(
                 title,
                 description,
                 category,
                 latitude,
                 longitude,
-                hasImage,
-                localImageUri,
+                !imageUrl.isEmpty(),
+                imageUrl,
                 "Pending",
                 System.currentTimeMillis(),
                 "student@example.com"
@@ -164,6 +191,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 report,
                 unused -> {
                     btnSubmit.setEnabled(true);
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(SubmitReportActivity.this,
                             "Report submitted successfully",
                             Toast.LENGTH_LONG).show();
@@ -171,9 +199,9 @@ public class SubmitReportActivity extends AppCompatActivity {
                 },
                 e -> {
                     btnSubmit.setEnabled(true);
-                    e.printStackTrace();
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(SubmitReportActivity.this,
-                            "Save failed: " + e.getClass().getSimpleName() + " - " + e.getMessage(),
+                            "Save failed: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
                 }
         );
