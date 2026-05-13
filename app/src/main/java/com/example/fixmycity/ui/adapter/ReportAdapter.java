@@ -1,8 +1,10 @@
 package com.example.fixmycity.ui.adapter;
 
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,9 +34,18 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
     @Override
     public void onBindViewHolder(@NonNull ReportViewHolder holder, int position) {
         Report report = reportList.get(position);
+
         holder.tvTitle.setText(report.getTitle());
-        holder.tvCategory.setText("Issue Type: " + report.getCategory());
-        holder.tvStatus.setText("Current Status: " + report.getStatus());
+        holder.tvCategory.setText(report.getCategory());
+        holder.tvStatus.setText(report.getStatus());
+
+        String imageUrl = report.getLocalImageUri();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            holder.ivReportImage.setVisibility(View.VISIBLE);
+            holder.ivReportImage.setImageURI(Uri.parse(imageUrl));
+        } else {
+            holder.ivReportImage.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -42,14 +53,16 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
         return reportList.size();
     }
 
-    static class ReportViewHolder extends RecyclerView.ViewHolder {
+    public static class ReportViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvCategory, tvStatus;
+        ImageView ivReportImage;
 
         public ReportViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvReportTitle);
-            tvCategory = itemView.findViewById(R.id.tvReportCategory);
-            tvStatus = itemView.findViewById(R.id.tvReportStatus);
+            tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvCategory = itemView.findViewById(R.id.tvCategory);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            ivReportImage = itemView.findViewById(R.id.ivReportImage);
         }
     }
 }
