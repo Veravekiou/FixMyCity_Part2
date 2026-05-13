@@ -3,12 +3,17 @@ package com.example.fixmycity.utils;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.os.Looper;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
 public class LocationHelper {
 
@@ -46,14 +51,26 @@ public class LocationHelper {
             return;
         }
 
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(location -> {
-                    if (location != null) {
-                        callback.onLocationReceived(location.getLatitude(), location.getLongitude());
-                    } else {
-                        callback.onError("Location not available");
+        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+                .setWaitForAccurateLocation(false)
+                .setMinUpdateIntervalMillis(500)
+                .setMaxUpdates(1)
+                .build();
+
+        com.google.android.gms.location.LocationCallback locationCallback =
+                new com.google.android.gms.location.LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        if (locationResult != null && !locationResult.getLocations().isEmpty()) {
+                            double lat = locationResult.getLocations().get(0).getLatitude();
+                            double lng = locationResult.getLocations().get(0).getLongitude();
+                            callback.onLocationReceived(lat, lng);
+                        } else {
+                            callback.onError("Location not available");
+                        }
                     }
-                })
-                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+                };
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 }
