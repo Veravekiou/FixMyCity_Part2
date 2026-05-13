@@ -15,8 +15,8 @@
     <string name="home_summary_loading">Refreshing your city issue overview...</string>
     <string name="home_summary_ready">Your latest report activity is up to date.</string>
     <string name="home_summary_error">Could not refresh the summary right now.</string>
-    <string name="home_create_report">Create New Report</string>
-    <string name="home_view_reports">View My Reports</string>
+    <string name="home_create_report">New Report</string>
+    <string name="home_view_reports">My Reports</string>
     <string name="home_next_steps_title">What you can do</string>
     <string name="home_next_step_report">Report a new issue with category, location, photo, and details.</string>
     <string name="home_next_step_track">Track submitted issues and filter them by status.</string>
@@ -117,6 +117,7 @@
     <string name="submit_save_failed_detail">Save failed: %1$s</string>
     <string name="location_permission_denied">Location permission denied</string>
     <string name="nav_home">Home</string>
-    <string name="nav_new_report">Report</string>
-    <string name="nav_my_reports">Reports</string>
+    <string name="nav_new_report"></string>
+    <string name="nav_create_report">Create report</string>
+    <string name="nav_my_reports">My Reports</string>
 </resources>

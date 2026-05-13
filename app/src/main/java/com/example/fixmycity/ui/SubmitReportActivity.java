@@ -3,8 +3,11 @@ package com.example.fixmycity.ui;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,6 +40,7 @@ public class SubmitReportActivity extends AppCompatActivity {
     private Button btnGetLocation, btnPickImage, btnSubmit;
     private TextView tvLocation, tvLocationStatus, tvCategoryStep, tvLocationStep, tvPhotoStep,
             tvDetailsStep, tvSubmitStep;
+    private View viewCategoryStep, viewDetailsStep, viewLocationStep, viewPhotoStep, viewSubmitStep;
     private ImageView ivPreview;
     private LinearLayout layoutImagePlaceholder;
     private BottomNavigationView bottomNavigation;
@@ -70,6 +74,11 @@ public class SubmitReportActivity extends AppCompatActivity {
         tvPhotoStep = findViewById(R.id.tvPhotoStep);
         tvDetailsStep = findViewById(R.id.tvDetailsStep);
         tvSubmitStep = findViewById(R.id.tvSubmitStep);
+        viewCategoryStep = findViewById(R.id.viewCategoryStep);
+        viewDetailsStep = findViewById(R.id.viewDetailsStep);
+        viewLocationStep = findViewById(R.id.viewLocationStep);
+        viewPhotoStep = findViewById(R.id.viewPhotoStep);
+        viewSubmitStep = findViewById(R.id.viewSubmitStep);
         ivPreview = findViewById(R.id.ivPreview);
         layoutImagePlaceholder = findViewById(R.id.layoutImagePlaceholder);
         bottomNavigation = findViewById(R.id.bottomNavigation);
@@ -108,7 +117,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                         selectedImageUri = uri;
                         ivPreview.setImageURI(uri);
                         layoutImagePlaceholder.setVisibility(View.GONE);
-                        markStepCompleted(tvPhotoStep);
+                        updateProgressIndicators();
                     }
                 }
         );
@@ -124,15 +133,15 @@ public class SubmitReportActivity extends AppCompatActivity {
         btnPickImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
         btnSubmit.setOnClickListener(v -> submitReport());
 
-        markStepCompleted(tvCategoryStep);
-        markStepCompleted(tvDetailsStep);
-        BottomNavigationHelper.setup(this, bottomNavigation, R.id.navNewReport);
+        setupProgressWatchers();
+        updateProgressIndicators();
+        BottomNavigationHelper.setup(this, bottomNavigation, View.NO_ID);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        BottomNavigationHelper.syncSelectedItem(bottomNavigation, R.id.navNewReport);
+        BottomNavigationHelper.syncSelectedItem(bottomNavigation, View.NO_ID);
     }
 
     private void fetchLocation() {
@@ -146,7 +155,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 tvLocationStatus.setBackgroundResource(R.drawable.bg_location_selected);
                 tvLocationStatus.setTextColor(getColor(R.color.primary_dark));
                 tvLocation.setText(getString(R.string.submit_location_format, lat, lng));
-                markStepCompleted(tvLocationStep);
+                updateProgressIndicators();
             }
 
             @Override
@@ -160,6 +169,62 @@ public class SubmitReportActivity extends AppCompatActivity {
         view.setTextColor(getColor(isPlaceholder ? R.color.text_secondary : R.color.text_primary));
         view.setTextSize(isPlaceholder ? 14 : 15);
         view.setTypeface(null, isPlaceholder ? android.graphics.Typeface.NORMAL : android.graphics.Typeface.BOLD);
+    }
+
+    private void setupProgressWatchers() {
+        spCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateProgressIndicators();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                updateProgressIndicators();
+            }
+        });
+
+        TextWatcher detailsWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No-op.
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateProgressIndicators();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No-op.
+            }
+        };
+
+        etTitle.addTextChangedListener(detailsWatcher);
+        etDescription.addTextChangedListener(detailsWatcher);
+    }
+
+    private void updateProgressIndicators() {
+        setStepState(tvCategoryStep, viewCategoryStep, isCategorySelected());
+        setStepState(tvDetailsStep, viewDetailsStep, areDetailsEntered());
+        setStepState(tvLocationStep, viewLocationStep, locationSelected);
+        setStepState(tvPhotoStep, viewPhotoStep, selectedImageUri != null);
+    }
+
+    private boolean isCategorySelected() {
+        Object selectedCategory = spCategory.getSelectedItem();
+        return selectedCategory != null
+                && !Constants.CATEGORY_PLACEHOLDER.equals(selectedCategory.toString());
+    }
+
+    private boolean areDetailsEntered() {
+        return !isBlank(etTitle.getText().toString())
+                && !isBlank(etDescription.getText().toString());
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void submitReport() {
@@ -200,13 +265,45 @@ public class SubmitReportActivity extends AppCompatActivity {
     }
 
     private void markStepCompleted(TextView stepView) {
-        stepView.setBackgroundResource(R.drawable.bg_step_active);
-        stepView.setTextColor(getColor(R.color.white));
+        setStepState(stepView, getStepLine(stepView), true);
     }
 
     private void markStepPending(TextView stepView) {
-        stepView.setBackgroundResource(R.drawable.bg_step_inactive);
-        stepView.setTextColor(getColor(R.color.text_secondary));
+        setStepState(stepView, getStepLine(stepView), false);
+    }
+
+    private void setStepState(TextView stepView, View stepLine, boolean isCompleted) {
+        stepView.setTextColor(getColor(isCompleted ? R.color.primary_dark : R.color.text_secondary));
+
+        if (stepLine != null) {
+            stepLine.setBackgroundResource(isCompleted
+                    ? R.drawable.bg_step_line_active
+                    : R.drawable.bg_step_line_inactive);
+        }
+    }
+
+    private View getStepLine(TextView stepView) {
+        if (stepView == tvCategoryStep) {
+            return viewCategoryStep;
+        }
+
+        if (stepView == tvDetailsStep) {
+            return viewDetailsStep;
+        }
+
+        if (stepView == tvLocationStep) {
+            return viewLocationStep;
+        }
+
+        if (stepView == tvPhotoStep) {
+            return viewPhotoStep;
+        }
+
+        if (stepView == tvSubmitStep) {
+            return viewSubmitStep;
+        }
+
+        return null;
     }
 
     private void setSubmittingState(boolean isSubmitting) {
@@ -273,8 +370,6 @@ public class SubmitReportActivity extends AppCompatActivity {
         tvLocation.setText(getString(R.string.submit_location_missing_note));
         ivPreview.setImageDrawable(null);
         layoutImagePlaceholder.setVisibility(View.VISIBLE);
-        markStepCompleted(tvCategoryStep);
-        markStepCompleted(tvDetailsStep);
         markStepPending(tvLocationStep);
         markStepPending(tvPhotoStep);
         markStepPending(tvSubmitStep);
@@ -283,6 +378,7 @@ public class SubmitReportActivity extends AppCompatActivity {
         longitude = 0.0;
         locationSelected = false;
         selectedImageUri = null;
+        updateProgressIndicators();
     }
 
     @Override

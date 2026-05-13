@@ -14,7 +14,15 @@ public final class Constants {
             "Broken Streetlight",
             "Garbage",
             "Sidewalk Damage",
-            "Vandalism"
+            "Vandalism",
+            "Water Leak",
+            "Traffic Sign Damage",
+            "Road Marking Issue",
+            "Drainage or Flooding",
+            "Park Damage",
+            "Abandoned Vehicle",
+            "Illegal Dumping",
+            "Graffiti"
     };
 
     private Constants() {

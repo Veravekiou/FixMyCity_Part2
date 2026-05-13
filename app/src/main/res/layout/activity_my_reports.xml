@@ -172,21 +172,45 @@
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_bottom_nav"
-        android:elevation="6dp"
-        android:minHeight="78dp"
-        app:itemActiveIndicatorStyle="@null"
-        app:itemBackground="@drawable/bottom_nav_item_background"
-        app:itemIconSize="28dp"
-        app:itemIconTint="@color/bottom_nav_item_color"
-        app:itemRippleColor="@color/bottom_nav_ripple_color"
-        app:itemTextAppearanceActive="@style/TextAppearance.FixMyCity.BottomNavigation.Active"
-        app:itemTextAppearanceInactive="@style/TextAppearance.FixMyCity.BottomNavigation.Inactive"
-        app:itemTextColor="@color/bottom_nav_item_color"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_navigation_menu" />
+        android:layout_height="104dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_bottom_nav"
+            android:elevation="6dp"
+            android:minHeight="84dp"
+            app:itemActiveIndicatorStyle="@null"
+            app:itemBackground="@drawable/bottom_nav_item_background"
+            app:itemIconSize="28dp"
+            app:itemIconTint="@color/bottom_nav_item_color"
+            app:itemRippleColor="@color/bottom_nav_ripple_color"
+            app:itemTextAppearanceActive="@style/TextAppearance.FixMyCity.BottomNavigation.Active"
+            app:itemTextAppearanceInactive="@style/TextAppearance.FixMyCity.BottomNavigation.Inactive"
+            app:itemTextColor="@color/bottom_nav_item_color"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/bottom_navigation_menu" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnNavCreateReport"
+            android:layout_width="66dp"
+            android:layout_height="66dp"
+            android:layout_gravity="top|center_horizontal"
+            android:contentDescription="@string/nav_create_report"
+            android:translationZ="18dp"
+            app:backgroundTint="@color/primary"
+            app:borderWidth="0dp"
+            app:elevation="10dp"
+            app:fabCustomSize="66dp"
+            app:maxImageSize="30dp"
+            app:rippleColor="@color/bottom_nav_ripple_color"
+            app:srcCompat="@drawable/ic_nav_add"
+            app:tint="@color/white" />
+    </FrameLayout>
 </LinearLayout>
