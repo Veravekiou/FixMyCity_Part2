@@ -1,6 +1,8 @@
 package com.example.fixmycity.ui;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,8 +20,8 @@ import java.util.List;
 public class MyReportsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerReports;
+    private TextView tvEmptyReports;
     private ReportAdapter reportAdapter;
-    private List<Report> reportList;
     private ReportRepository reportRepository;
 
     @Override
@@ -28,10 +30,10 @@ public class MyReportsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_reports);
 
         recyclerReports = findViewById(R.id.recyclerReports);
+        tvEmptyReports = findViewById(R.id.tvEmptyReports);
         recyclerReports.setLayoutManager(new LinearLayoutManager(this));
 
-        reportList = new ArrayList<>();
-        reportAdapter = new ReportAdapter(reportList);
+        reportAdapter = new ReportAdapter(new ArrayList<>());
         recyclerReports.setAdapter(reportAdapter);
 
         reportRepository = new ReportRepository();
@@ -47,18 +49,30 @@ public class MyReportsActivity extends AppCompatActivity {
                         "Reports found: " + reports.size(),
                         Toast.LENGTH_LONG).show();
 
-                reportList.clear();
-                reportList.addAll(reports);
-                reportAdapter.notifyDataSetChanged();
+                reportAdapter.submitList(reports);
+                updateEmptyState(reports.isEmpty());
             }
 
             @Override
             public void onFailure(Exception e) {
                 Toast.makeText(MyReportsActivity.this,
-                        "Failed to load reports: " + e.getMessage(),
+                        getRepositoryErrorMessage(e),
                         Toast.LENGTH_LONG).show();
-                e.printStackTrace();
             }
         });
+    }
+
+    private void updateEmptyState(boolean isEmpty) {
+        tvEmptyReports.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        recyclerReports.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private String getRepositoryErrorMessage(Exception exception) {
+        String detail = exception.getMessage();
+        if (detail == null || detail.trim().isEmpty()) {
+            return "Failed to load reports. Please try again.";
+        }
+
+        return "Failed to load reports: " + detail;
     }
 }

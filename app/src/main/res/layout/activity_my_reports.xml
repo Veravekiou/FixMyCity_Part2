@@ -5,15 +5,27 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFFFFF">
+    android:background="@color/screen_background">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="My Reports"
+        android:text="@string/reports_title"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#111111"
+        android:textColor="@color/text_primary"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/tvEmptyReports"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_card"
+        android:padding="18dp"
+        android:text="@string/reports_empty"
+        android:textColor="@color/text_secondary"
+        android:textSize="15sp"
+        android:visibility="gone"
         android:layout_marginBottom="12dp" />
 
     <androidx.recyclerview.widget.RecyclerView

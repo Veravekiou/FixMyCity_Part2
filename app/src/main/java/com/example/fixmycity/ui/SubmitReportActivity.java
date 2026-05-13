@@ -17,7 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fixmycity.R;
 import com.example.fixmycity.data.ReportRepository;
+import com.example.fixmycity.domain.ReportFactory;
+import com.example.fixmycity.domain.ReportFormData;
+import com.example.fixmycity.domain.ReportFormValidator;
+import com.example.fixmycity.domain.ReportFormValidator.ValidationResult;
 import com.example.fixmycity.model.Report;
+import com.example.fixmycity.utils.Constants;
 import com.example.fixmycity.utils.LocationHelper;
 
 public class SubmitReportActivity extends AppCompatActivity {
@@ -36,6 +41,8 @@ public class SubmitReportActivity extends AppCompatActivity {
     private LocationHelper locationHelper;
     private ActivityResultLauncher<String> imagePickerLauncher;
     private ReportRepository reportRepository;
+    private ReportFormValidator formValidator;
+    private ReportFactory reportFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +60,13 @@ public class SubmitReportActivity extends AppCompatActivity {
 
         locationHelper = new LocationHelper(this);
         reportRepository = new ReportRepository();
+        formValidator = new ReportFormValidator();
+        reportFactory = new ReportFactory();
 
-        String[] categories = {"Pothole", "Broken Streetlight", "Garbage", "Sidewalk Damage", "Vandalism"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
-                categories
+                Constants.REPORT_CATEGORIES
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCategory.setAdapter(adapter);
@@ -104,44 +112,17 @@ public class SubmitReportActivity extends AppCompatActivity {
     }
 
     private void submitReport() {
-        String title = etTitle.getText().toString().trim();
-        String description = etDescription.getText().toString().trim();
-        String category = spCategory.getSelectedItem().toString();
+        ReportFormData formData = getFormData();
+        ValidationResult validationResult = formValidator.validate(formData);
 
-        if (title.isEmpty()) {
-            etTitle.setError("Title is required");
+        if (!validationResult.isValid()) {
+            showValidationError(validationResult);
             return;
         }
-
-        if (description.isEmpty()) {
-            etDescription.setError("Description is required");
-            return;
-        }
-
-        if (!locationSelected) {
-            Toast.makeText(this, "Please get location first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        boolean hasImage = selectedImageUri != null;
-        String localImageUri = selectedImageUri != null ? selectedImageUri.toString() : "";
-
-        Toast.makeText(this, "Validation passed", Toast.LENGTH_SHORT).show();
 
         btnSubmit.setEnabled(false);
 
-        Report report = new Report(
-                title,
-                description,
-                category,
-                latitude,
-                longitude,
-                hasImage,
-                localImageUri,
-                "Pending",
-                System.currentTimeMillis(),
-                "student@example.com"
-        );
+        Report report = reportFactory.createFromForm(formData);
 
         reportRepository.saveReport(
                 report,
@@ -154,12 +135,49 @@ public class SubmitReportActivity extends AppCompatActivity {
                 },
                 e -> {
                     btnSubmit.setEnabled(true);
-                    e.printStackTrace();
                     Toast.makeText(SubmitReportActivity.this,
-                            "Save failed: " + e.getClass().getSimpleName() + " - " + e.getMessage(),
+                            getRepositoryErrorMessage(e),
                             Toast.LENGTH_LONG).show();
                 }
         );
+    }
+
+    private ReportFormData getFormData() {
+        return new ReportFormData(
+                etTitle.getText().toString(),
+                etDescription.getText().toString(),
+                spCategory.getSelectedItem().toString(),
+                latitude,
+                longitude,
+                locationSelected,
+                selectedImageUri
+        );
+    }
+
+    private void showValidationError(ValidationResult validationResult) {
+        switch (validationResult.getField()) {
+            case TITLE:
+                etTitle.setError(validationResult.getMessage());
+                break;
+            case DESCRIPTION:
+                etDescription.setError(validationResult.getMessage());
+                break;
+            case LOCATION:
+                Toast.makeText(this, validationResult.getMessage(), Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(this, "Please check the form", Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private String getRepositoryErrorMessage(Exception exception) {
+        String detail = exception.getMessage();
+        if (detail == null || detail.trim().isEmpty()) {
+            return "Save failed. Please try again.";
+        }
+
+        return "Save failed: " + detail;
     }
 
     private void clearForm() {

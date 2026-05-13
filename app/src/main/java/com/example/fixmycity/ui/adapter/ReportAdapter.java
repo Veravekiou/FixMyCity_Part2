@@ -21,6 +21,12 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
         this.reportList = reportList;
     }
 
+    public void submitList(List<Report> reports) {
+        reportList.clear();
+        reportList.addAll(reports);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ReportViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -43,7 +49,9 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
     }
 
     static class ReportViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvCategory, tvStatus;
+        private final TextView tvTitle;
+        private final TextView tvCategory;
+        private final TextView tvStatus;
 
         public ReportViewHolder(@NonNull View itemView) {
             super(itemView);

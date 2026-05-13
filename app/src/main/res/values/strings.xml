@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">FixMyCity</string>
+    <string name="home_title">FixMyCity</string>
+    <string name="home_subtitle">Report city issues quickly and track their progress.</string>
+    <string name="home_create_report">Create New Report</string>
+    <string name="home_view_reports">View My Reports</string>
+    <string name="submit_title">Submit New Report</string>
+    <string name="submit_title_hint">Enter report title</string>
+    <string name="submit_description_hint">Describe the issue</string>
+    <string name="submit_get_location">Get Current Location</string>
+    <string name="submit_location_missing">Location not selected</string>
+    <string name="submit_choose_image">Choose Image</string>
+    <string name="submit_image_preview">Selected image preview</string>
+    <string name="submit_report">Submit Report</string>
+    <string name="reports_title">My Reports</string>
+    <string name="reports_empty">No reports yet. Create your first report from the home screen.</string>
 </resources>
