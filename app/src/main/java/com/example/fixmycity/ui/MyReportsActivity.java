@@ -13,6 +13,7 @@ import com.example.fixmycity.R;
 import com.example.fixmycity.data.ReportRepository;
 import com.example.fixmycity.model.Report;
 import com.example.fixmycity.ui.adapter.ReportAdapter;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ public class MyReportsActivity extends AppCompatActivity {
 
         recyclerReports = findViewById(R.id.recyclerReports);
         tvEmptyReports = findViewById(R.id.tvEmptyReports);
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
         recyclerReports.setLayoutManager(new LinearLayoutManager(this));
 
         reportAdapter = new ReportAdapter(new ArrayList<>());
@@ -38,6 +40,7 @@ public class MyReportsActivity extends AppCompatActivity {
 
         reportRepository = new ReportRepository();
 
+        BottomNavigationHelper.setup(this, bottomNavigation, R.id.navMyReports);
         loadReports();
     }
 

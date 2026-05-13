@@ -24,6 +24,7 @@ import com.example.fixmycity.domain.ReportFormValidator.ValidationResult;
 import com.example.fixmycity.model.Report;
 import com.example.fixmycity.utils.Constants;
 import com.example.fixmycity.utils.LocationHelper;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class SubmitReportActivity extends AppCompatActivity {
 
@@ -57,6 +58,7 @@ public class SubmitReportActivity extends AppCompatActivity {
         btnSubmit = findViewById(R.id.btnSubmit);
         tvLocation = findViewById(R.id.tvLocation);
         ivPreview = findViewById(R.id.ivPreview);
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
 
         locationHelper = new LocationHelper(this);
         reportRepository = new ReportRepository();
@@ -92,6 +94,8 @@ public class SubmitReportActivity extends AppCompatActivity {
         btnPickImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
 
         btnSubmit.setOnClickListener(v -> submitReport());
+
+        BottomNavigationHelper.setup(this, bottomNavigation, R.id.navNewReport);
     }
 
     private void fetchLocation() {

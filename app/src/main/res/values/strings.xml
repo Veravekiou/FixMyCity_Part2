@@ -2,9 +2,22 @@
     <string name="app_name">FixMyCity</string>
     <string name="home_title">FixMyCity</string>
     <string name="home_subtitle">Report city issues quickly and track their progress.</string>
+    <string name="home_appbar_subtitle">City issue reporting</string>
+    <string name="home_welcome">Welcome back</string>
+    <string name="home_welcome_note">Keep the city team updated with clear, trackable reports.</string>
+    <string name="home_quick_action_title">Quick action</string>
+    <string name="home_summary_title">Report summary</string>
+    <string name="home_pending_reports">Pending reports</string>
+    <string name="home_submitted_reports">Submitted reports</string>
     <string name="home_create_report">Create New Report</string>
     <string name="home_view_reports">View My Reports</string>
     <string name="submit_title">Submit New Report</string>
+    <string name="submit_subtitle">Add the issue details, location, and photo.</string>
+    <string name="submit_section_issue_details">Issue details</string>
+    <string name="submit_section_location">Location</string>
+    <string name="submit_section_photo">Photo</string>
+    <string name="submit_section_submit">Submit</string>
+    <string name="submit_section_submit_note">Review the information before sending your report.</string>
     <string name="submit_title_hint">Enter report title</string>
     <string name="submit_description_hint">Describe the issue</string>
     <string name="submit_get_location">Get Current Location</string>
@@ -13,5 +26,13 @@
     <string name="submit_image_preview">Selected image preview</string>
     <string name="submit_report">Submit Report</string>
     <string name="reports_title">My Reports</string>
+    <string name="reports_subtitle">Track submitted city issues.</string>
     <string name="reports_empty">No reports yet. Create your first report from the home screen.</string>
+    <string name="report_category_format">%1$s</string>
+    <string name="report_status_format">%1$s</string>
+    <string name="report_date_format">Submitted %1$s</string>
+    <string name="report_location_format">Lat %1$.4f, Lng %2$.4f</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_new_report">New Report</string>
+    <string name="nav_my_reports">My Reports</string>
 </resources>
