@@ -17,7 +17,6 @@
         android:theme="@style/Theme.FixMyCity"
         tools:targetApi="31">
 
-        <activity android:name=".ui.ReportDetailsActivity" />
         <activity android:name=".ui.MyReportsActivity" />
         <activity android:name=".ui.SubmitReportActivity" />
 

@@ -1,10 +1,7 @@
 package com.example.fixmycity.model;
 
-import com.google.firebase.firestore.Exclude;
-
 public class Report {
 
-    private String id;
     private String title;
     private String description;
     private String category;
@@ -34,16 +31,6 @@ public class Report {
         this.status = status;
         this.createdAt = createdAt;
         this.userEmail = userEmail;
-    }
-
-    @Exclude
-    public String getId() {
-        return id;
-    }
-
-    @Exclude
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getTitle() {
