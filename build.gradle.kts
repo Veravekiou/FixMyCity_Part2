@@ -3,3 +3,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.google.gms.google.services) apply false
 }
+
+allprojects {
+    val safeBuildRoot = File(System.getProperty("user.home"), ".fixmycity-gradle-build")
+    layout.buildDirectory.set(safeBuildRoot.resolve(project.path.replace(':', '_').trim('_')))
+}

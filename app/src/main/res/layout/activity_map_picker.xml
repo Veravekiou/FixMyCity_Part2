@@ -6,18 +6,24 @@
     android:background="#FFFFFF">
 
     <TextView
-        android:id="@+id/tvMapTitle"
+        android:id="@+id/tvPickedLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Reports Map"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:padding="16dp"
+        android:text="Tap the exact point of the problem on the map"
         android:textColor="#111111"
-        android:padding="16dp" />
+        android:textStyle="bold" />
 
     <WebView
-        android:id="@+id/reportsMap"
+        android:id="@+id/pickLocationMap"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btnConfirmLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Use This Location" />
 </LinearLayout>

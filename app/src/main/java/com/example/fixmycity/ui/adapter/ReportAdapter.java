@@ -1,7 +1,6 @@
 package com.example.fixmycity.ui.adapter;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fixmycity.R;
 import com.example.fixmycity.model.Report;
+import com.example.fixmycity.ui.ReportsMapActivity;
 
 import java.util.List;
 
@@ -39,20 +39,39 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
         holder.tvTitle.setText(report.getTitle());
         holder.tvCategory.setText("Issue Type: " + report.getCategory());
         holder.tvStatus.setText("Current Status: " + report.getStatus());
-        holder.tvLocation.setText("Location: " + report.getLatitude() + ", " + report.getLongitude());
-        holder.btnOpenInMaps.setOnClickListener(v -> openReportInMaps(v, report));
+        String locationText = report.getLocationAddress() != null
+                && !report.getLocationAddress().trim().isEmpty()
+                ? report.getLocationAddress()
+                : "Open the map to view the exact location";
+        holder.tvLocation.setText("Location: " + locationText);
+        holder.btnOpenInMaps.setOnClickListener(v -> openReportInAppMap(v, report));
     }
 
-    private void openReportInMaps(View view, Report report) {
-        String label = Uri.encode(report.getTitle());
-        Uri uri = Uri.parse("geo:0,0?q=" + report.getLatitude() + "," + report.getLongitude()
-                + "(" + label + ")");
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        if (intent.resolveActivity(view.getContext().getPackageManager()) != null) {
-            view.getContext().startActivity(intent);
-        } else {
-            Toast.makeText(view.getContext(), "No maps app found", Toast.LENGTH_SHORT).show();
+    private void openReportInAppMap(View view, Report report) {
+        if (!hasValidLocation(report)) {
+            Toast.makeText(view.getContext(), "No location found for this report", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        Intent intent = new Intent(view.getContext(), ReportsMapActivity.class);
+        intent.putExtra(ReportsMapActivity.EXTRA_FOCUS_REPORT, true);
+        intent.putExtra(ReportsMapActivity.EXTRA_REPORT_LATITUDE, report.getLatitude());
+        intent.putExtra(ReportsMapActivity.EXTRA_REPORT_LONGITUDE, report.getLongitude());
+        intent.putExtra(ReportsMapActivity.EXTRA_REPORT_TITLE, report.getTitle());
+        intent.putExtra(ReportsMapActivity.EXTRA_REPORT_CATEGORY, report.getCategory());
+        intent.putExtra(ReportsMapActivity.EXTRA_REPORT_STATUS, report.getStatus());
+        intent.putExtra(ReportsMapActivity.EXTRA_REPORT_ADDRESS, report.getLocationAddress());
+        view.getContext().startActivity(intent);
+    }
+
+    private boolean hasValidLocation(Report report) {
+        double latitude = report.getLatitude();
+        double longitude = report.getLongitude();
+        return latitude >= -90
+                && latitude <= 90
+                && longitude >= -180
+                && longitude <= 180
+                && !(latitude == 0.0 && longitude == 0.0);
     }
 
     @Override

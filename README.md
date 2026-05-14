@@ -17,7 +17,7 @@ FixMyCity is a citizen-reporting application that allows users to:
 
 - create a city issue report
 - choose an issue category
-- capture the user's current location
+- choose the report location on a map
 - optionally attach an image from the device
 - submit the report to a cloud database
 - view submitted reports
@@ -29,7 +29,7 @@ The aim of the app is to provide a simple mobile workflow for reporting urban pr
 - Main screen with navigation to report submission and reports list
 - Report submission form with validation
 - Category selection for common city problems
-- Geolocation support using device location services
+- Map-based location selection
 - Optional image selection from device storage
 - Firebase Firestore integration for saving report data
 - Firebase Storage support prepared in the data layer
@@ -42,7 +42,6 @@ The aim of the app is to provide a simple mobile workflow for reporting urban pr
 - Android SDK
 - Firebase Firestore
 - Firebase Storage
-- Google Play Services Location
 - RecyclerView
 - XML layouts
 
@@ -53,7 +52,7 @@ Key areas of the codebase:
 - `ui/` activities and adapter classes
 - `data/` Firebase manager and repository layer
 - `model/` report data model
-- `utils/` constants and location helper
+- `utils/` constants
 
 ## Setup Notes
 
