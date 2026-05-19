@@ -126,6 +126,10 @@
     <string name="report_image">Report image</string>
     <string name="report_view_on_map">View on Map</string>
     <string name="report_no_location">No location found for this report</string>
+    <string name="reports_map_title">Reports Map</string>
+    <string name="reports_map_report_title">Report Location</string>
+    <string name="reports_map_subtitle">Tap a marker to inspect its location.</string>
+    <string name="reports_map_back">Back</string>
     <string name="submit_location_format">Lat: %1$.5f, Lng: %2$.5f</string>
     <string name="submit_check_form">Please check the form</string>
     <string name="submit_save_failed">Save failed. Please try again.</string>

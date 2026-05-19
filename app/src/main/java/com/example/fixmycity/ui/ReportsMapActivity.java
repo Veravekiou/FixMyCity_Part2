@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.fixmycity.R;
 import com.example.fixmycity.data.ReportRepository;
 import com.example.fixmycity.model.Report;
+import com.google.android.material.appbar.MaterialToolbar;
 
 import org.json.JSONObject;
 
@@ -40,8 +40,10 @@ public class ReportsMapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports_map);
 
+        MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
         reportsMap = findViewById(R.id.reportsMap);
         reportRepository = new ReportRepository();
+        topAppBar.setNavigationOnClickListener(v -> finish());
 
         WebSettings settings = reportsMap.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -65,8 +67,8 @@ public class ReportsMapActivity extends AppCompatActivity {
             return;
         }
 
-        TextView tvMapTitle = findViewById(R.id.tvMapTitle);
-        tvMapTitle.setText("Report Location");
+        MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
+        topAppBar.setTitle(R.string.reports_map_report_title);
         loadMapHtml(buildMapHtml(buildSingleReportMarkerJson(latitude, longitude)));
     }
 
