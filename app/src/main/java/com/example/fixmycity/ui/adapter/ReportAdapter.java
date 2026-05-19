@@ -64,13 +64,7 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
                 : context.getString(R.string.report_location_format, report.getLatitude(), report.getLongitude());
         holder.tvLocation.setText(locationText);
 
-        String imageUri = report.getLocalImageUri();
-        if (imageUri != null && !imageUri.trim().isEmpty()) {
-            holder.ivReportImage.setVisibility(View.VISIBLE);
-            holder.ivReportImage.setImageURI(Uri.parse(imageUri));
-        } else {
-            holder.ivReportImage.setVisibility(View.GONE);
-        }
+        bindReportImage(holder.ivReportImage, report.getLocalImageUri());
 
         holder.btnOpenInMaps.setOnClickListener(v -> openReportInAppMap(v, report));
         holder.itemView.setOnClickListener(v -> openReportDetails(context, report));
@@ -107,6 +101,22 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
     private String formatDate(long timestamp) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
         return formatter.format(new Date(timestamp));
+    }
+
+    private void bindReportImage(ImageView imageView, String imageUri) {
+        imageView.setImageDrawable(null);
+
+        if (imageUri == null || imageUri.trim().isEmpty()) {
+            imageView.setVisibility(View.GONE);
+            return;
+        }
+
+        try {
+            imageView.setImageURI(Uri.parse(imageUri));
+            imageView.setVisibility(imageView.getDrawable() == null ? View.GONE : View.VISIBLE);
+        } catch (SecurityException | IllegalArgumentException exception) {
+            imageView.setVisibility(View.GONE);
+        }
     }
 
     private void openReportDetails(Context context, Report report) {

@@ -89,13 +89,7 @@ public class ReportDetailsActivity extends AppCompatActivity {
         tvDetailLocation.setText(getString(R.string.report_location_format, latitude, longitude));
         updateCancelVisibility();
 
-        if (hasImage && imageUri != null && !imageUri.trim().isEmpty()) {
-            tvDetailNoPhoto.setVisibility(View.GONE);
-            ivDetailImage.setImageURI(Uri.parse(imageUri));
-        } else {
-            tvDetailNoPhoto.setVisibility(View.VISIBLE);
-            ivDetailImage.setImageDrawable(null);
-        }
+        bindDetailImage(hasImage, imageUri);
     }
 
     private void updateCancelVisibility() {
@@ -103,6 +97,22 @@ public class ReportDetailsActivity extends AppCompatActivity {
                 && !reportId.trim().isEmpty()
                 && Constants.DEFAULT_REPORT_STATUS.equalsIgnoreCase(status);
         btnCancelReport.setVisibility(canCancel ? View.VISIBLE : View.GONE);
+    }
+
+    private void bindDetailImage(boolean hasImage, String imageUri) {
+        ivDetailImage.setImageDrawable(null);
+
+        if (!hasImage || imageUri == null || imageUri.trim().isEmpty()) {
+            tvDetailNoPhoto.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        try {
+            ivDetailImage.setImageURI(Uri.parse(imageUri));
+            tvDetailNoPhoto.setVisibility(ivDetailImage.getDrawable() == null ? View.VISIBLE : View.GONE);
+        } catch (SecurityException | IllegalArgumentException exception) {
+            tvDetailNoPhoto.setVisibility(View.VISIBLE);
+        }
     }
 
     private void showCancelConfirmation() {
