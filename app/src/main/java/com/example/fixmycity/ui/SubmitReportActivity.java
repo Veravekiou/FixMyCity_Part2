@@ -9,12 +9,16 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,9 +30,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fixmycity.R;
 import com.example.fixmycity.data.ReportRepository;
+import com.example.fixmycity.domain.ReportFactory;
+import com.example.fixmycity.domain.ReportFormData;
+import com.example.fixmycity.domain.ReportFormValidator;
+import com.example.fixmycity.domain.ReportFormValidator.ValidationResult;
 import com.example.fixmycity.model.Report;
 import com.example.fixmycity.utils.CameraHelper;
+import com.example.fixmycity.utils.Constants;
 import com.example.fixmycity.utils.ImageUploadHelper;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,9 +55,12 @@ public class SubmitReportActivity extends AppCompatActivity {
     private EditText etTitle, etDescription;
     private Spinner spCategory;
     private Button btnPickMapLocation, btnTakePhoto, btnSubmit;
-    private TextView tvLocation;
+    private TextView tvLocation, tvLocationStatus, tvCategoryStep, tvLocationStep, tvPhotoStep,
+            tvDetailsStep, tvSubmitStep;
+    private View viewCategoryStep, viewDetailsStep, viewLocationStep, viewPhotoStep, viewSubmitStep;
     private ImageView ivPreview, ivMapPreview;
-    private ProgressBar progressBar;
+    private LinearLayout layoutImagePlaceholder;
+    private BottomNavigationView bottomNavigation;
 
     private double latitude = 0.0;
     private double longitude = 0.0;
@@ -59,6 +73,8 @@ public class SubmitReportActivity extends AppCompatActivity {
     private CameraHelper cameraHelper;
     private ImageUploadHelper imageUploadHelper;
     private ReportRepository reportRepository;
+    private ReportFormValidator formValidator;
+    private ReportFactory reportFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,22 +88,49 @@ public class SubmitReportActivity extends AppCompatActivity {
         btnTakePhoto = findViewById(R.id.btnTakePhoto);
         btnSubmit = findViewById(R.id.btnSubmit);
         tvLocation = findViewById(R.id.tvLocation);
+        tvLocationStatus = findViewById(R.id.tvLocationStatus);
+        tvCategoryStep = findViewById(R.id.tvCategoryStep);
+        tvLocationStep = findViewById(R.id.tvLocationStep);
+        tvPhotoStep = findViewById(R.id.tvPhotoStep);
+        tvDetailsStep = findViewById(R.id.tvDetailsStep);
+        tvSubmitStep = findViewById(R.id.tvSubmitStep);
+        viewCategoryStep = findViewById(R.id.viewCategoryStep);
+        viewDetailsStep = findViewById(R.id.viewDetailsStep);
+        viewLocationStep = findViewById(R.id.viewLocationStep);
+        viewPhotoStep = findViewById(R.id.viewPhotoStep);
+        viewSubmitStep = findViewById(R.id.viewSubmitStep);
         ivPreview = findViewById(R.id.ivPreview);
         ivMapPreview = findViewById(R.id.ivMapPreview);
-        progressBar = findViewById(R.id.progressBar);
+        layoutImagePlaceholder = findViewById(R.id.layoutImagePlaceholder);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
 
         cameraHelper = new CameraHelper(this);
         imageUploadHelper = new ImageUploadHelper();
         reportRepository = new ReportRepository();
+        formValidator = new ReportFormValidator();
+        reportFactory = new ReportFactory();
         showMapPlaceholder();
 
-        String[] categories = {"Pothole", "Broken Streetlight", "Garbage", "Sidewalk Damage", "Vandalism"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
-                android.R.layout.simple_spinner_item,
-                categories
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                R.layout.item_spinner_category,
+                Constants.REPORT_CATEGORIES
+        ) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView view = (TextView) super.getView(position, convertView, parent);
+                styleCategoryOption(view, position == 0);
+                return view;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                TextView view = (TextView) super.getDropDownView(position, convertView, parent);
+                styleCategoryOption(view, position == 0);
+                return view;
+            }
+        };
+        adapter.setDropDownViewResource(R.layout.item_spinner_category_dropdown);
         spCategory.setAdapter(adapter);
 
         mapPickerLauncher = registerForActivityResult(
@@ -108,8 +151,17 @@ public class SubmitReportActivity extends AppCompatActivity {
                 openCamera();
             }
         });
-
         btnSubmit.setOnClickListener(v -> submitReport());
+
+        setupProgressWatchers();
+        updateProgressIndicators();
+        BottomNavigationHelper.setup(this, bottomNavigation, View.NO_ID);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavigationHelper.syncSelectedItem(bottomNavigation, View.NO_ID);
     }
 
     private void openCamera() {
@@ -126,7 +178,9 @@ public class SubmitReportActivity extends AppCompatActivity {
         if (requestCode == CameraHelper.CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
             selectedImageUri = cameraHelper.getPhotoUri();
             ivPreview.setImageURI(selectedImageUri);
-            Toast.makeText(this, "Photo captured successfully", Toast.LENGTH_SHORT).show();
+            layoutImagePlaceholder.setVisibility(View.GONE);
+            updateProgressIndicators();
+            Toast.makeText(this, R.string.submit_photo_captured, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -144,97 +198,256 @@ public class SubmitReportActivity extends AppCompatActivity {
         }
 
         locationSelected = true;
-        tvLocation.setText(locationAddress.isEmpty() ? "Location selected on map" : locationAddress);
+        tvLocationStatus.setText(R.string.submit_location_ready);
+        tvLocationStatus.setBackgroundResource(R.drawable.bg_location_selected);
+        tvLocationStatus.setTextColor(getColor(R.color.primary_dark));
+        tvLocation.setText(locationAddress.isEmpty()
+                ? getString(R.string.submit_location_format, latitude, longitude)
+                : locationAddress);
+
         if (locationAddress.isEmpty()) {
             loadAddressForLocation(latitude, longitude);
         }
         loadStaticMap(latitude, longitude, 17);
+        updateProgressIndicators();
+    }
+
+    private void styleCategoryOption(TextView view, boolean isPlaceholder) {
+        view.setTextColor(getColor(isPlaceholder ? R.color.text_secondary : R.color.text_primary));
+        view.setTextSize(isPlaceholder ? 14 : 15);
+        view.setTypeface(null, isPlaceholder ? android.graphics.Typeface.NORMAL : android.graphics.Typeface.BOLD);
+    }
+
+    private void setupProgressWatchers() {
+        spCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateProgressIndicators();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                updateProgressIndicators();
+            }
+        });
+
+        TextWatcher detailsWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No-op.
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateProgressIndicators();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No-op.
+            }
+        };
+
+        etTitle.addTextChangedListener(detailsWatcher);
+        etDescription.addTextChangedListener(detailsWatcher);
+    }
+
+    private void updateProgressIndicators() {
+        setStepState(tvCategoryStep, viewCategoryStep, isCategorySelected());
+        setStepState(tvDetailsStep, viewDetailsStep, areDetailsEntered());
+        setStepState(tvLocationStep, viewLocationStep, locationSelected);
+        setStepState(tvPhotoStep, viewPhotoStep, selectedImageUri != null);
+    }
+
+    private boolean isCategorySelected() {
+        Object selectedCategory = spCategory.getSelectedItem();
+        return selectedCategory != null
+                && !Constants.CATEGORY_PLACEHOLDER.equals(selectedCategory.toString());
+    }
+
+    private boolean areDetailsEntered() {
+        return !isBlank(etTitle.getText().toString())
+                && !isBlank(etDescription.getText().toString());
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void submitReport() {
-        String title = etTitle.getText().toString().trim();
-        String description = etDescription.getText().toString().trim();
-        String category = spCategory.getSelectedItem().toString();
+        ReportFormData formData = getFormData();
+        ValidationResult validationResult = formValidator.validate(formData);
 
-        if (title.isEmpty()) {
-            etTitle.setError("Title is required");
+        if (!validationResult.isValid()) {
+            showValidationError(validationResult);
             return;
         }
 
-        if (description.isEmpty()) {
-            etDescription.setError("Description is required");
-            return;
-        }
-
-        if (!locationSelected) {
-            Toast.makeText(this, "Please choose a location on the map first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        btnSubmit.setEnabled(false);
-        progressBar.setVisibility(View.VISIBLE);
+        setSubmittingState(true);
 
         if (selectedImageUri != null) {
             imageUploadHelper.uploadImage(selectedImageUri, new ImageUploadHelper.UploadCallback() {
                 @Override
                 public void onSuccess(String downloadUrl) {
-                    saveReport(title, description, category, downloadUrl);
+                    saveReport(formData, downloadUrl);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-                    btnSubmit.setEnabled(true);
-                    progressBar.setVisibility(View.GONE);
+                    setSubmittingState(false);
                     Toast.makeText(SubmitReportActivity.this,
-                            "Image upload failed: " + e.getMessage(),
+                            getString(R.string.submit_image_upload_failed_detail, e.getMessage()),
                             Toast.LENGTH_LONG).show();
                 }
             });
         } else {
-            saveReport(title, description, category, "");
+            saveReport(formData, "");
         }
     }
 
-    private void saveReport(String title, String description, String category, String imageUrl) {
-        Report report = new Report(
-                title,
-                description,
-                category,
-                latitude,
-                longitude,
-                locationAddress,
-                !imageUrl.isEmpty(),
-                imageUrl,
-                "Pending",
-                System.currentTimeMillis(),
-                "student@example.com"
-        );
+    private void saveReport(ReportFormData formData, String imageUrl) {
+        Report report = reportFactory.createFromForm(formData, imageUrl);
 
         reportRepository.saveReport(
                 report,
                 unused -> {
-                    btnSubmit.setEnabled(true);
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(SubmitReportActivity.this,
-                            "Report submitted successfully",
-                            Toast.LENGTH_LONG).show();
-                    returnToMainScreen();
+                    setSubmittingState(false);
+                    showSuccessDialog();
+                    clearForm();
                 },
                 e -> {
-                    btnSubmit.setEnabled(true);
-                    progressBar.setVisibility(View.GONE);
+                    setSubmittingState(false);
                     Toast.makeText(SubmitReportActivity.this,
-                            "Save failed: " + e.getMessage(),
+                            getRepositoryErrorMessage(e),
                             Toast.LENGTH_LONG).show();
                 }
         );
     }
 
-    private void returnToMainScreen() {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
-        finish();
+    private void showSuccessDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.submit_success)
+                .setMessage(R.string.submit_success_message)
+                .setPositiveButton(R.string.dialog_ok, null)
+                .show();
+    }
+
+    private void markStepCompleted(TextView stepView) {
+        setStepState(stepView, getStepLine(stepView), true);
+    }
+
+    private void markStepPending(TextView stepView) {
+        setStepState(stepView, getStepLine(stepView), false);
+    }
+
+    private void setStepState(TextView stepView, View stepLine, boolean isCompleted) {
+        stepView.setTextColor(getColor(isCompleted ? R.color.primary_dark : R.color.text_secondary));
+
+        if (stepLine != null) {
+            stepLine.setBackgroundResource(isCompleted
+                    ? R.drawable.bg_step_line_active
+                    : R.drawable.bg_step_line_inactive);
+        }
+    }
+
+    private View getStepLine(TextView stepView) {
+        if (stepView == tvCategoryStep) {
+            return viewCategoryStep;
+        }
+
+        if (stepView == tvDetailsStep) {
+            return viewDetailsStep;
+        }
+
+        if (stepView == tvLocationStep) {
+            return viewLocationStep;
+        }
+
+        if (stepView == tvPhotoStep) {
+            return viewPhotoStep;
+        }
+
+        if (stepView == tvSubmitStep) {
+            return viewSubmitStep;
+        }
+
+        return null;
+    }
+
+    private void setSubmittingState(boolean isSubmitting) {
+        btnSubmit.setEnabled(!isSubmitting);
+        btnSubmit.setText(isSubmitting
+                ? getString(R.string.submit_report_loading)
+                : getString(R.string.submit_report));
+
+        if (isSubmitting) {
+            markStepCompleted(tvSubmitStep);
+        } else {
+            markStepPending(tvSubmitStep);
+        }
+    }
+
+    private ReportFormData getFormData() {
+        return new ReportFormData(
+                etTitle.getText().toString(),
+                etDescription.getText().toString(),
+                spCategory.getSelectedItem().toString(),
+                latitude,
+                longitude,
+                locationAddress,
+                locationSelected,
+                selectedImageUri
+        );
+    }
+
+    private void showValidationError(ValidationResult validationResult) {
+        switch (validationResult.getField()) {
+            case CATEGORY:
+            case LOCATION:
+                Toast.makeText(this, validationResult.getMessage(), Toast.LENGTH_SHORT).show();
+                break;
+            case TITLE:
+                etTitle.setError(validationResult.getMessage());
+                break;
+            case DESCRIPTION:
+                etDescription.setError(validationResult.getMessage());
+                break;
+            default:
+                Toast.makeText(this, getString(R.string.submit_check_form), Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private String getRepositoryErrorMessage(Exception exception) {
+        String detail = exception.getMessage();
+        if (detail == null || detail.trim().isEmpty()) {
+            return getString(R.string.submit_save_failed);
+        }
+
+        return getString(R.string.submit_save_failed_detail, detail);
+    }
+
+    private void clearForm() {
+        etTitle.setText("");
+        etDescription.setText("");
+        spCategory.setSelection(0);
+        tvLocationStatus.setText(getString(R.string.submit_location_missing));
+        tvLocationStatus.setBackgroundResource(R.drawable.bg_preview);
+        tvLocationStatus.setTextColor(getColor(R.color.text_secondary));
+        tvLocation.setText(getString(R.string.submit_location_missing_note));
+        ivPreview.setImageDrawable(null);
+        layoutImagePlaceholder.setVisibility(View.VISIBLE);
+        markStepPending(tvLocationStep);
+        markStepPending(tvPhotoStep);
+        markStepPending(tvSubmitStep);
+
+        latitude = 0.0;
+        longitude = 0.0;
+        locationAddress = "";
+        locationSelected = false;
+        selectedImageUri = null;
+        showMapPlaceholder();
+        updateProgressIndicators();
     }
 
     private void loadAddressForLocation(double lat, double lng) {
@@ -244,8 +457,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 Geocoder geocoder = new Geocoder(this, Locale.getDefault());
                 List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
                 if (addresses != null && !addresses.isEmpty()) {
-                    Address address = addresses.get(0);
-                    resolvedAddress = address.getAddressLine(0);
+                    resolvedAddress = addresses.get(0).getAddressLine(0);
                 }
             } catch (IOException ignored) {
                 resolvedAddress = "";
@@ -319,7 +531,7 @@ public class SubmitReportActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openCamera();
             } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show();
             }
         }
     }
