@@ -2,9 +2,6 @@ package com.example.fixmycity.ui;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -43,15 +40,15 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class SubmitReportActivity extends AppCompatActivity {
+
+    private static final double ATHENS_LATITUDE = 37.9838;
+    private static final double ATHENS_LONGITUDE = 23.7275;
+    private static final double EMULATOR_DEFAULT_LATITUDE = 37.4219983;
+    private static final double EMULATOR_DEFAULT_LONGITUDE = -122.084;
 
     private EditText etTitle, etDescription;
     private Spinner spCategory;
@@ -68,7 +65,6 @@ public class SubmitReportActivity extends AppCompatActivity {
     private boolean locationSelected = false;
     private String locationAddress = "";
     private Uri selectedImageUri = null;
-    private final AtomicInteger mapRequestCounter = new AtomicInteger(0);
 
     private ActivityResultLauncher<Intent> mapPickerLauncher;
     private CameraHelper cameraHelper;
@@ -221,8 +217,6 @@ public class SubmitReportActivity extends AppCompatActivity {
         if (locationAddress.isEmpty()) {
             loadAddressForLocation(latitude, longitude);
         }
-
-        loadStaticMap(latitude, longitude, 17);
         updateProgressIndicators();
     }
 
@@ -234,17 +228,31 @@ public class SubmitReportActivity extends AppCompatActivity {
             @Override
             public void onLocationReceived(double lat, double lng) {
                 btnUseCurrentLocation.setEnabled(true);
-                latitude = lat;
-                longitude = lng;
-                locationAddress = "";
+                if (isEmulatorDefaultLocation(lat, lng)) {
+                    latitude = ATHENS_LATITUDE;
+                    longitude = ATHENS_LONGITUDE;
+                    locationAddress = getString(R.string.submit_emulator_location_fallback_address);
+                    Toast.makeText(
+                            SubmitReportActivity.this,
+                            R.string.submit_emulator_location_fallback,
+                            Toast.LENGTH_LONG
+                    ).show();
+                } else {
+                    latitude = lat;
+                    longitude = lng;
+                    locationAddress = "";
+                }
                 locationSelected = true;
 
                 tvLocationStatus.setText(R.string.submit_location_ready);
                 tvLocationStatus.setBackgroundResource(R.drawable.bg_location_selected);
                 tvLocationStatus.setTextColor(getColor(R.color.primary_dark));
-                tvLocation.setText(getString(R.string.submit_location_format, latitude, longitude));
-                loadAddressForLocation(latitude, longitude);
-                loadStaticMap(latitude, longitude, 17);
+                tvLocation.setText(locationAddress.isEmpty()
+                        ? getString(R.string.submit_location_format, latitude, longitude)
+                        : locationAddress);
+                if (locationAddress.isEmpty()) {
+                    loadAddressForLocation(latitude, longitude);
+                }
                 updateProgressIndicators();
             }
 
@@ -258,6 +266,11 @@ public class SubmitReportActivity extends AppCompatActivity {
                 ).show();
             }
         });
+    }
+
+    private boolean isEmulatorDefaultLocation(double lat, double lng) {
+        return Math.abs(lat - EMULATOR_DEFAULT_LATITUDE) < 0.01
+                && Math.abs(lng - EMULATOR_DEFAULT_LONGITUDE) < 0.01;
     }
 
     private void styleCategoryOption(TextView view, boolean isPlaceholder) {
@@ -521,44 +534,9 @@ public class SubmitReportActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void loadStaticMap(double lat, double lng, int zoom) {
-        int requestId = mapRequestCounter.incrementAndGet();
-        new Thread(() -> {
-            try {
-                String marker = URLEncoder.encode("color:red|" + lat + "," + lng, "UTF-8");
-                String url = "https://maps.googleapis.com/maps/api/staticmap"
-                        + "?center=" + lat + "," + lng
-                        + "&zoom=" + zoom
-                        + "&size=640x360"
-                        + "&scale=2"
-                        + "&maptype=roadmap"
-                        + "&markers=" + marker
-                        + "&key=" + getString(R.string.google_maps_key);
-
-                HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-                connection.setConnectTimeout(3000);
-                connection.setReadTimeout(3000);
-
-                try (InputStream inputStream = connection.getInputStream()) {
-                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                    if (bitmap != null && requestId == mapRequestCounter.get()) {
-                        runOnUiThread(() -> ivMapPreview.setImageBitmap(bitmap));
-                    }
-                } finally {
-                    connection.disconnect();
-                }
-            } catch (IOException ignored) {
-                if (requestId == mapRequestCounter.get()) {
-                    runOnUiThread(() -> ivMapPreview.setBackgroundColor(Color.LTGRAY));
-                }
-            }
-        }).start();
-    }
-
     private void showMapPlaceholder() {
-        mapRequestCounter.incrementAndGet();
         ivMapPreview.setImageDrawable(null);
-        ivMapPreview.setBackgroundColor(Color.LTGRAY);
+        ivMapPreview.setVisibility(View.GONE);
     }
 
     private void openMapPicker() {
@@ -594,7 +572,6 @@ public class SubmitReportActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        mapRequestCounter.incrementAndGet();
         super.onDestroy();
     }
 }

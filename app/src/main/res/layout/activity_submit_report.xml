@@ -334,7 +334,8 @@
                         android:layout_marginTop="12dp"
                         android:background="@drawable/bg_submit_panel"
                         android:contentDescription="@string/submit_map_preview"
-                        android:scaleType="centerCrop" />
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

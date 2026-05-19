@@ -70,6 +70,8 @@
     <string name="submit_location_ready">Location selected</string>
     <string name="submit_location_loading">Getting current location...</string>
     <string name="submit_current_location_failed">Could not detect current location. Try the map picker.</string>
+    <string name="submit_emulator_location_fallback">Emulator default location detected, using Athens for testing.</string>
+    <string name="submit_emulator_location_fallback_address">Athens, Greece</string>
     <string name="submit_location_ready_note">Coordinates attached to this report.</string>
     <string name="submit_choose_image">Choose Image</string>
     <string name="submit_take_photo">Take Photo</string>
