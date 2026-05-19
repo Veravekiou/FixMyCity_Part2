@@ -1,32 +1,36 @@
 package com.example.fixmycity.ui;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fixmycity.R;
 import com.example.fixmycity.data.ReportRepository;
 import com.example.fixmycity.model.Report;
+import com.example.fixmycity.utils.CameraHelper;
+import com.example.fixmycity.utils.ImageUploadHelper;
 import com.example.fixmycity.utils.LocationHelper;
 
 public class SubmitReportActivity extends AppCompatActivity {
 
     private EditText etTitle, etDescription;
     private Spinner spCategory;
-    private Button btnGetLocation, btnPickImage, btnSubmit;
+    private Button btnGetLocation, btnTakePhoto, btnSubmit;
     private TextView tvLocation;
     private ImageView ivPreview;
+    private ProgressBar progressBar;
 
     private double latitude = 0.0;
     private double longitude = 0.0;
@@ -34,7 +38,8 @@ public class SubmitReportActivity extends AppCompatActivity {
     private Uri selectedImageUri = null;
 
     private LocationHelper locationHelper;
-    private ActivityResultLauncher<String> imagePickerLauncher;
+    private CameraHelper cameraHelper;
+    private ImageUploadHelper imageUploadHelper;
     private ReportRepository reportRepository;
 
     @Override
@@ -46,12 +51,15 @@ public class SubmitReportActivity extends AppCompatActivity {
         etDescription = findViewById(R.id.etDescription);
         spCategory = findViewById(R.id.spCategory);
         btnGetLocation = findViewById(R.id.btnGetLocation);
-        btnPickImage = findViewById(R.id.btnPickImage);
+        btnTakePhoto = findViewById(R.id.btnTakePhoto);
         btnSubmit = findViewById(R.id.btnSubmit);
         tvLocation = findViewById(R.id.tvLocation);
         ivPreview = findViewById(R.id.ivPreview);
+        progressBar = findViewById(R.id.progressBar);
 
         locationHelper = new LocationHelper(this);
+        cameraHelper = new CameraHelper(this);
+        imageUploadHelper = new ImageUploadHelper();
         reportRepository = new ReportRepository();
 
         String[] categories = {"Pothole", "Broken Streetlight", "Garbage", "Sidewalk Damage", "Vandalism"};
@@ -63,16 +71,6 @@ public class SubmitReportActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCategory.setAdapter(adapter);
 
-        imagePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.GetContent(),
-                uri -> {
-                    if (uri != null) {
-                        selectedImageUri = uri;
-                        ivPreview.setImageURI(uri);
-                    }
-                }
-        );
-
         btnGetLocation.setOnClickListener(v -> {
             if (!locationHelper.hasLocationPermission()) {
                 locationHelper.requestLocationPermission();
@@ -81,9 +79,37 @@ public class SubmitReportActivity extends AppCompatActivity {
             }
         });
 
-        btnPickImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+        btnTakePhoto.setOnClickListener(v -> {
+            if (checkSelfPermission(android.Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                        new String[]{android.Manifest.permission.CAMERA},
+                        CameraHelper.CAMERA_PERMISSION_REQUEST_CODE
+                );
+            } else {
+                openCamera();
+            }
+        });
 
         btnSubmit.setOnClickListener(v -> submitReport());
+    }
+
+    private void openCamera() {
+        Uri uri = cameraHelper.openCamera();
+        if (uri != null) {
+            selectedImageUri = uri;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CameraHelper.CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
+            selectedImageUri = cameraHelper.getPhotoUri();
+            ivPreview.setImageURI(selectedImageUri);
+            Toast.makeText(this, "Photo captured successfully", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void fetchLocation() {
@@ -123,21 +149,39 @@ public class SubmitReportActivity extends AppCompatActivity {
             return;
         }
 
-        boolean hasImage = selectedImageUri != null;
-        String localImageUri = selectedImageUri != null ? selectedImageUri.toString() : "";
-
-        Toast.makeText(this, "Validation passed", Toast.LENGTH_SHORT).show();
-
         btnSubmit.setEnabled(false);
+        progressBar.setVisibility(View.VISIBLE);
 
+        if (selectedImageUri != null) {
+            imageUploadHelper.uploadImage(selectedImageUri, new ImageUploadHelper.UploadCallback() {
+                @Override
+                public void onSuccess(String downloadUrl) {
+                    saveReport(title, description, category, downloadUrl);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    btnSubmit.setEnabled(true);
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(SubmitReportActivity.this,
+                            "Image upload failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        } else {
+            saveReport(title, description, category, "");
+        }
+    }
+
+    private void saveReport(String title, String description, String category, String imageUrl) {
         Report report = new Report(
                 title,
                 description,
                 category,
                 latitude,
                 longitude,
-                hasImage,
-                localImageUri,
+                !imageUrl.isEmpty(),
+                imageUrl,
                 "Pending",
                 System.currentTimeMillis(),
                 "student@example.com"
@@ -147,6 +191,7 @@ public class SubmitReportActivity extends AppCompatActivity {
                 report,
                 unused -> {
                     btnSubmit.setEnabled(true);
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(SubmitReportActivity.this,
                             "Report submitted successfully",
                             Toast.LENGTH_LONG).show();
@@ -154,9 +199,9 @@ public class SubmitReportActivity extends AppCompatActivity {
                 },
                 e -> {
                     btnSubmit.setEnabled(true);
-                    e.printStackTrace();
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(SubmitReportActivity.this,
-                            "Save failed: " + e.getClass().getSimpleName() + " - " + e.getMessage(),
+                            "Save failed: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
                 }
         );
@@ -184,6 +229,14 @@ public class SubmitReportActivity extends AppCompatActivity {
                 fetchLocation();
             } else {
                 Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if (requestCode == CameraHelper.CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }

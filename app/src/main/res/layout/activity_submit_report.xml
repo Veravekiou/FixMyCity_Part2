@@ -61,10 +61,10 @@
             android:layout_marginBottom="12dp" />
 
         <Button
-            android:id="@+id/btnPickImage"
+            android:id="@+id/btnTakePhoto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Choose Image"
+            android:text="Take Photo"
             android:layout_marginBottom="12dp" />
 
         <ImageView
@@ -75,6 +75,14 @@
             android:background="#EEEEEE"
             android:contentDescription="Selected image preview"
             android:layout_marginBottom="16dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp" />
 
         <Button
             android:id="@+id/btnSubmit"
