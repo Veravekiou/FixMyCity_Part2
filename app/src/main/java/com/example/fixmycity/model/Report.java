@@ -7,6 +7,7 @@ public class Report {
     private String category;
     private double latitude;
     private double longitude;
+    private String locationAddress;
     private boolean hasImage;
     private String localImageUri;
     private String status;
@@ -21,11 +22,20 @@ public class Report {
                   double latitude, double longitude, boolean hasImage,
                   String localImageUri, String status, long createdAt,
                   String userEmail) {
+        this(title, description, category, latitude, longitude, "",
+                hasImage, localImageUri, status, createdAt, userEmail);
+    }
+
+    public Report(String title, String description, String category,
+                  double latitude, double longitude, String locationAddress,
+                  boolean hasImage, String localImageUri, String status,
+                  long createdAt, String userEmail) {
         this.title = title;
         this.description = description;
         this.category = category;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.locationAddress = locationAddress;
         this.hasImage = hasImage;
         this.localImageUri = localImageUri;
         this.status = status;
@@ -71,6 +81,14 @@ public class Report {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getLocationAddress() {
+        return locationAddress;
+    }
+
+    public void setLocationAddress(String locationAddress) {
+        this.locationAddress = locationAddress;
     }
 
     public boolean isHasImage() {

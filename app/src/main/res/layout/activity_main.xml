@@ -37,5 +37,12 @@
         android:id="@+id/btnViewReports"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="View My Reports" />
+        android:text="View My Reports"
+        android:layout_marginBottom="14dp" />
+
+    <Button
+        android:id="@+id/btnReportsMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Reports Map" />
 </LinearLayout>
