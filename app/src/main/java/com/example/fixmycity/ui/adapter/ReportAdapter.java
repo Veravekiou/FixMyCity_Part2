@@ -128,6 +128,7 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ReportView
         intent.putExtra(ReportDetailsActivity.EXTRA_STATUS, report.getStatus());
         intent.putExtra(ReportDetailsActivity.EXTRA_LATITUDE, report.getLatitude());
         intent.putExtra(ReportDetailsActivity.EXTRA_LONGITUDE, report.getLongitude());
+        intent.putExtra(ReportDetailsActivity.EXTRA_LOCATION_ADDRESS, report.getLocationAddress());
         intent.putExtra(ReportDetailsActivity.EXTRA_CREATED_AT, report.getCreatedAt());
         intent.putExtra(ReportDetailsActivity.EXTRA_HAS_IMAGE, report.isHasImage());
         intent.putExtra(ReportDetailsActivity.EXTRA_IMAGE_URI, report.getLocalImageUri());

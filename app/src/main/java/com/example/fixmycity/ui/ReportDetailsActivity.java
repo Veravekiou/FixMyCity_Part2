@@ -29,6 +29,7 @@ public class ReportDetailsActivity extends AppCompatActivity {
     public static final String EXTRA_STATUS = "extra_status";
     public static final String EXTRA_LATITUDE = "extra_latitude";
     public static final String EXTRA_LONGITUDE = "extra_longitude";
+    public static final String EXTRA_LOCATION_ADDRESS = "extra_location_address";
     public static final String EXTRA_CREATED_AT = "extra_created_at";
     public static final String EXTRA_HAS_IMAGE = "extra_has_image";
     public static final String EXTRA_IMAGE_URI = "extra_image_uri";
@@ -76,6 +77,7 @@ public class ReportDetailsActivity extends AppCompatActivity {
         status = getIntent().getStringExtra(EXTRA_STATUS);
         double latitude = getIntent().getDoubleExtra(EXTRA_LATITUDE, 0.0);
         double longitude = getIntent().getDoubleExtra(EXTRA_LONGITUDE, 0.0);
+        String locationAddress = getIntent().getStringExtra(EXTRA_LOCATION_ADDRESS);
         long createdAt = getIntent().getLongExtra(EXTRA_CREATED_AT, 0L);
         boolean hasImage = getIntent().getBooleanExtra(EXTRA_HAS_IMAGE, false);
         String imageUri = getIntent().getStringExtra(EXTRA_IMAGE_URI);
@@ -86,10 +88,18 @@ public class ReportDetailsActivity extends AppCompatActivity {
         styleStatus();
         tvDetailDate.setText(getString(R.string.report_date_format, formatDate(createdAt)));
         tvDetailDescription.setText(description);
-        tvDetailLocation.setText(getString(R.string.report_location_format, latitude, longitude));
+        tvDetailLocation.setText(getLocationText(locationAddress, latitude, longitude));
         updateCancelVisibility();
 
         bindDetailImage(hasImage, imageUri);
+    }
+
+    private String getLocationText(String locationAddress, double latitude, double longitude) {
+        if (locationAddress != null && !locationAddress.trim().isEmpty()) {
+            return locationAddress;
+        }
+
+        return getString(R.string.report_location_format, latitude, longitude);
     }
 
     private void updateCancelVisibility() {
