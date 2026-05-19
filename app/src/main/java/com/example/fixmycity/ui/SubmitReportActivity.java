@@ -38,6 +38,7 @@ import com.example.fixmycity.model.Report;
 import com.example.fixmycity.utils.CameraHelper;
 import com.example.fixmycity.utils.Constants;
 import com.example.fixmycity.utils.ImageUploadHelper;
+import com.example.fixmycity.utils.LocationHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -54,7 +55,7 @@ public class SubmitReportActivity extends AppCompatActivity {
 
     private EditText etTitle, etDescription;
     private Spinner spCategory;
-    private Button btnPickMapLocation, btnTakePhoto, btnSubmit;
+    private Button btnPickMapLocation, btnUseCurrentLocation, btnTakePhoto, btnSubmit;
     private TextView tvLocation, tvLocationStatus, tvCategoryStep, tvLocationStep, tvPhotoStep,
             tvDetailsStep, tvSubmitStep;
     private View viewCategoryStep, viewDetailsStep, viewLocationStep, viewPhotoStep, viewSubmitStep;
@@ -72,6 +73,7 @@ public class SubmitReportActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> mapPickerLauncher;
     private CameraHelper cameraHelper;
     private ImageUploadHelper imageUploadHelper;
+    private LocationHelper locationHelper;
     private ReportRepository reportRepository;
     private ReportFormValidator formValidator;
     private ReportFactory reportFactory;
@@ -85,6 +87,7 @@ public class SubmitReportActivity extends AppCompatActivity {
         etDescription = findViewById(R.id.etDescription);
         spCategory = findViewById(R.id.spCategory);
         btnPickMapLocation = findViewById(R.id.btnPickMapLocation);
+        btnUseCurrentLocation = findViewById(R.id.btnUseCurrentLocation);
         btnTakePhoto = findViewById(R.id.btnTakePhoto);
         btnSubmit = findViewById(R.id.btnSubmit);
         tvLocation = findViewById(R.id.tvLocation);
@@ -106,6 +109,7 @@ public class SubmitReportActivity extends AppCompatActivity {
 
         cameraHelper = new CameraHelper(this);
         imageUploadHelper = new ImageUploadHelper();
+        locationHelper = new LocationHelper(this);
         reportRepository = new ReportRepository();
         formValidator = new ReportFormValidator();
         reportFactory = new ReportFactory();
@@ -139,6 +143,13 @@ public class SubmitReportActivity extends AppCompatActivity {
         );
 
         btnPickMapLocation.setOnClickListener(v -> openMapPicker());
+        btnUseCurrentLocation.setOnClickListener(v -> {
+            if (!locationHelper.hasLocationPermission()) {
+                locationHelper.requestLocationPermission();
+            } else {
+                fetchCurrentLocation();
+            }
+        });
         ivMapPreview.setOnClickListener(v -> openMapPicker());
         btnTakePhoto.setOnClickListener(v -> {
             if (checkSelfPermission(android.Manifest.permission.CAMERA)
@@ -168,6 +179,8 @@ public class SubmitReportActivity extends AppCompatActivity {
         Uri uri = cameraHelper.openCamera();
         if (uri != null) {
             selectedImageUri = uri;
+        } else {
+            Toast.makeText(this, R.string.submit_camera_unavailable, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -208,8 +221,43 @@ public class SubmitReportActivity extends AppCompatActivity {
         if (locationAddress.isEmpty()) {
             loadAddressForLocation(latitude, longitude);
         }
+
         loadStaticMap(latitude, longitude, 17);
         updateProgressIndicators();
+    }
+
+    private void fetchCurrentLocation() {
+        btnUseCurrentLocation.setEnabled(false);
+        tvLocationStatus.setText(R.string.submit_location_loading);
+
+        locationHelper.getCurrentLocation(new LocationHelper.ReportLocationCallback() {
+            @Override
+            public void onLocationReceived(double lat, double lng) {
+                btnUseCurrentLocation.setEnabled(true);
+                latitude = lat;
+                longitude = lng;
+                locationAddress = "";
+                locationSelected = true;
+
+                tvLocationStatus.setText(R.string.submit_location_ready);
+                tvLocationStatus.setBackgroundResource(R.drawable.bg_location_selected);
+                tvLocationStatus.setTextColor(getColor(R.color.primary_dark));
+                tvLocation.setText(getString(R.string.submit_location_format, latitude, longitude));
+                loadAddressForLocation(latitude, longitude);
+                loadStaticMap(latitude, longitude, 17);
+                updateProgressIndicators();
+            }
+
+            @Override
+            public void onLocationFailed(Exception exception) {
+                btnUseCurrentLocation.setEnabled(true);
+                Toast.makeText(
+                        SubmitReportActivity.this,
+                        R.string.submit_current_location_failed,
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
     }
 
     private void styleCategoryOption(TextView view, boolean isPlaceholder) {
@@ -532,6 +580,14 @@ public class SubmitReportActivity extends AppCompatActivity {
                 openCamera();
             } else {
                 Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if (requestCode == LocationHelper.LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                fetchCurrentLocation();
+            } else {
+                Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_SHORT).show();
             }
         }
     }

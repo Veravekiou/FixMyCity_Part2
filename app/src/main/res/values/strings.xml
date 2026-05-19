@@ -64,13 +64,17 @@
     <string name="submit_description_hint">Describe the issue</string>
     <string name="submit_get_location">Get Current Location</string>
     <string name="submit_choose_map_location">Choose Location on Map</string>
+    <string name="submit_use_current_location">Use Current Location</string>
     <string name="submit_location_missing">Location not selected</string>
     <string name="submit_location_missing_note">Tap the map to choose the exact spot.</string>
     <string name="submit_location_ready">Location selected</string>
+    <string name="submit_location_loading">Getting current location...</string>
+    <string name="submit_current_location_failed">Could not detect current location. Try the map picker.</string>
     <string name="submit_location_ready_note">Coordinates attached to this report.</string>
     <string name="submit_choose_image">Choose Image</string>
     <string name="submit_take_photo">Take Photo</string>
     <string name="submit_photo_captured">Photo captured successfully</string>
+    <string name="submit_camera_unavailable">Camera app is not available on this device.</string>
     <string name="submit_image_upload_failed_detail">Image upload failed: %1$s</string>
     <string name="submit_image_placeholder_title">No image selected</string>
     <string name="submit_image_placeholder_note">Add a photo to help the city team understand the issue.</string>

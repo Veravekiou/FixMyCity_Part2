@@ -295,6 +295,18 @@
                         android:text="@string/submit_choose_map_location"
                         app:cornerRadius="8dp" />
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUseCurrentLocation"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:minHeight="52dp"
+                        android:text="@string/submit_use_current_location"
+                        android:textColor="@color/primary"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="@color/primary" />
+
                     <TextView
                         android:id="@+id/tvLocationStatus"
                         android:layout_width="match_parent"

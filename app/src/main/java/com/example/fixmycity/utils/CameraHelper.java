@@ -1,7 +1,10 @@
 package com.example.fixmycity.utils;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -12,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class CameraHelper {
@@ -49,11 +53,24 @@ public class CameraHelper {
 
             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            List<ResolveInfo> cameraActivities = activity.getPackageManager()
+                    .queryIntentActivities(cameraIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolveInfo : cameraActivities) {
+                activity.grantUriPermission(
+                        resolveInfo.activityInfo.packageName,
+                        photoUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                );
+            }
+
             activity.startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
 
             return photoUri;
 
-        } catch (IOException e) {
+        } catch (ActivityNotFoundException | IOException e) {
             e.printStackTrace();
             return null;
         }
