@@ -80,6 +80,7 @@ public class ReportRepository {
                 "Broken Streetlight",
                 35.3387,
                 25.1442,
+                "Vikela Municipal Library, Iraklio 712 02, Greece",
                 false,
                 null,
                 "Resolved",
