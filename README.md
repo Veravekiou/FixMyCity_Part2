@@ -8,7 +8,7 @@ Android mobile application for reporting local city issues such as potholes, bro
 <p align="center">
   <img src="![Uploading Screenshot 2026-05-25 110328.png…]()" width="250" alt="Main Screen">
   <img src="![Uploading Screenshot 2026-05-25 110240.png…]()" width="250" alt="Submit Report">
-  <img src="![Uploading Screenshot 2026-05-25 110311.png…]()" width="250" alt="Submit Report">
+  <img src="<img width="495" height="1101" alt="Screenshot 2026-05-25 110311" src="https://github.com/user-attachments/assets/6517450e-90f0-47f9-b78c-df11a170ca13" />" width="250" alt="Submit Report">
 </p>
 
 
