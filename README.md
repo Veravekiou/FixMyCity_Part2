@@ -5,9 +5,13 @@ Android mobile application for reporting local city issues such as potholes, bro
 ## Screenshots
 
 
-<img width="493" height="1101" alt="Screenshot 2026-05-25 110328" src="https://github.com/user-attachments/assets/820b1dd5-5e8d-4e25-8b4f-396f2d132011" /> <img width="492" height="1101" alt="Screenshot 2026-05-25 110341" src="https://github.com/user-attachments/assets/50e7baab-4027-4dc7-ab46-9f2775969407" />
-<img width="495" height="1101" alt="Screenshot 2026-05-25 110311" src="https://github.com/user-attachments/assets/67db4731-c983-4553-b5f1-3ffce4b79d51" />
-<img width="495" height="1103" alt="Screenshot 2026-05-25 110240" src="https://github.com/user-attachments/assets/58023cf0-c610-4470-b891-1679a3baf824" />
+| Main Screen | Submit Report  | My Reports |
+|---|---|---|---|
+| <img width="493" height="1101" alt="Screenshot 2026-05-25 110328" src="https://github.com/user-attachments/assets/20392446-598f-4269-8311-43fc9db8626e" />
+ | <img width="495" height="1103" alt="Screenshot 2026-05-25 110240" src="https://github.com/user-attachments/assets/8867cce4-f4ff-42e0-b687-81d33b39446a" />
+ | <img width="495" height="1101" alt="Screenshot 2026-05-25 110311" src="https://github.com/user-attachments/assets/d2489ec2-cd33-4a4a-b9fb-b764085cd4c1" />
+| <img width="492" height="1101" alt="Screenshot 2026-05-25 110341" src="https://github.com/user-attachments/assets/0761e09f-2f99-41bb-b212-bc0803a04ccd" />
+ |
 
 
 
