@@ -5,14 +5,11 @@ Android mobile application for reporting local city issues such as potholes, bro
 ## Screenshots
 
 
-| Main Screen | Submit Report  | My Reports |
-|---|---|---|---|
-| <img width="493" height="1101" alt="Screenshot 2026-05-25 110328" src="https://github.com/user-attachments/assets/20392446-598f-4269-8311-43fc9db8626e" />
- | <img width="495" height="1103" alt="Screenshot 2026-05-25 110240" src="https://github.com/user-attachments/assets/8867cce4-f4ff-42e0-b687-81d33b39446a" />
- | <img width="495" height="1101" alt="Screenshot 2026-05-25 110311" src="https://github.com/user-attachments/assets/d2489ec2-cd33-4a4a-b9fb-b764085cd4c1" />
-| <img width="492" height="1101" alt="Screenshot 2026-05-25 110341" src="https://github.com/user-attachments/assets/0761e09f-2f99-41bb-b212-bc0803a04ccd" />
- |
-
+<p align="center">
+  <img src="![Uploading Screenshot 2026-05-25 110328.png…]()" width="250" alt="Main Screen">
+  <img src="![Uploading Screenshot 2026-05-25 110240.png…]()" width="250" alt="Submit Report">
+  <img src="![Uploading Screenshot 2026-05-25 110311.png…]()" width="250" alt="Submit Report">
+</p>
 
 
 ## Coursework Context
