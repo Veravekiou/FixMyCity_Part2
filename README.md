@@ -2,6 +2,15 @@
 
 Android mobile application for reporting local city issues such as potholes, broken streetlights, garbage, sidewalk damage, and vandalism.
 
+## Screenshots
+
+
+<img width="493" height="1101" alt="Screenshot 2026-05-25 110328" src="https://github.com/user-attachments/assets/820b1dd5-5e8d-4e25-8b4f-396f2d132011" /> <img width="492" height="1101" alt="Screenshot 2026-05-25 110341" src="https://github.com/user-attachments/assets/50e7baab-4027-4dc7-ab46-9f2775969407" />
+<img width="495" height="1101" alt="Screenshot 2026-05-25 110311" src="https://github.com/user-attachments/assets/67db4731-c983-4553-b5f1-3ffce4b79d51" />
+<img width="495" height="1103" alt="Screenshot 2026-05-25 110240" src="https://github.com/user-attachments/assets/58023cf0-c610-4470-b891-1679a3baf824" />
+
+
+
 ## Coursework Context
 
 This repository contains the **CWRK2 / Part 2 final implementation** of the FixMyCity project.
